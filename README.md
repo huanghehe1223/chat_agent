@@ -6,6 +6,7 @@
 
 > **快速导航**
 >
+> **在线体验：** [Minimal Agent 当前对话 Web 服务](https://huanghe1223-chat-agent-huanghe.ms.show) 已上线，可直接访问体验；如果在线服务暂时异常，仍可查看 [9. 录屏展示](#9-录屏展示) 中的截屏/录屏结果。  
 > **重点阅读：** [8. AI Prompt 与问题解决记录](#8-ai-prompt-与问题解决记录)  
 > **效果展示：** [9. 录屏展示](#9-录屏展示)
 
@@ -107,6 +108,8 @@ Web 运行：
 ```bash
 streamlit run src/web.py
 ```
+
+线上服务已部署，可直接访问 [Minimal Agent 当前对话 Web 服务](https://huanghe1223-chat-agent-huanghe.ms.show)。如果服务临时不可用，可以继续通过 [9. 录屏展示](#9-录屏展示) 查看主要功能的展示结果。
 
 启动后浏览器访问 Streamlit 输出的本地地址，通常是：
 
