@@ -4,7 +4,10 @@
 
 项目同时提供 CLI 和 Streamlit Web 两个入口。两者共用同一个 `AgentRuntime`，Web 只负责交互展示，不重新实现 Agent loop。
 
-快速跳转：[录屏展示](#录屏展示)
+> **快速导航**
+>
+> **重点阅读：** [AI Prompt 与问题解决记录](#ai-prompt-与问题解决记录)  
+> **效果展示：** [录屏展示](#录屏展示)
 
 ## 功能概览
 
@@ -214,6 +217,24 @@ Trace 记录字段包括：
 
 Web 页面中也提供 `工具 Trace` 和 `Req/Res` 两个标签页，用于查看当前 session 的执行细节。
 
+## AI Prompt 与问题解决记录
+
+详细记录见 [PROMPTS_AND_NOTES.md](PROMPTS_AND_NOTES.md)。
+
+本项目的 AI 协作不是一次性生成完整代码，而是按“任务拆解、模块实现、单元测试、进度追踪、持续纠偏”的方式完成。开发前先用 [TASK_BREAKDOWN.md](TASK_BREAKDOWN.md) 明确题目边界和实现顺序，包括自建 Agent runtime、DeepSeek 原生 `tool_calls`、session memory、最大步数收束策略和录屏验收用例。开发中用 [TASK_TRACKING.md](TASK_TRACKING.md) 记录每个模块的完成状态、测试命令、测试结果和设计决策，保证跨 session 后仍能恢复上下文继续协作。
+
+实现过程中，我持续根据 Agent 运行原理修正 AI 的实现方向，例如：
+
+- 明确不能使用现成 Agent loop，核心 `AgentRuntime` 必须自己实现。
+- 要求使用 DeepSeek 原生 `tool_calls`，不让模型输出自定义 JSON 格式。
+- 要求默认保留 thinking mode，并区分 `reasoning_content` 和正式 `content`。
+- 将流式解析从“收集全部 chunks 后合并”修正为“逐 chunk 产出 delta 事件”。
+- 区分对话历史和 session memory：`messages` 保存聊天流水，`memory.tasks` 保存跨轮次任务状态。
+- 将 todo 工具改成 session 级 `manage_todo_list` 完整列表同步，而不是独立文件 CRUD。
+- 每完成一个功能模块都补充对应测试，并优先运行相关测试文件。
+
+原始 AI 对话记录保存在本地 `codex_sessions/` 目录中；提交文档中用 [PROMPTS_AND_NOTES.md](PROMPTS_AND_NOTES.md) 做了结构化整理，重点记录 prompt、问题、修正思路和最终落地结果。
+
 ## 录屏展示
 
 ### 1. 多轮对话、思考过程展示、流式输出
@@ -269,7 +290,3 @@ pytest -q
 ```
 
 项目测试覆盖配置读取、LLM 流式解析、工具注册与执行、session memory、runtime loop、trace、CLI 和 Web helper。最近记录的全量测试结果可在 `TASK_TRACKING.md` 中查看。
-
-## 后续文档
-
-`AI Prompt 与问题解决记录` 将继续整理到 `PROMPTS_AND_NOTES.md`，用于补充开发中使用的提示词、关键设计取舍和问题排查过程。

@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-- 当前步骤：步骤 14/17 - Prompt 与问题解决记录
+- 当前步骤：步骤 15/17 - 整理 CLI 示例命令与录屏用例
 - 状态：进行中
 - 更新时间：2026-06-07
 
@@ -143,6 +143,10 @@
   - 说明自建 Agent loop、最大步数限制、工具列表、trace 与 req/res 日志。
   - 说明 memory 的召回时机与放置方式。
   - 单独增加录屏展示章节，并按裸链接形式放置视频链接。
+- 已补充 AI Prompt 与问题解决记录：
+  - 重写 `PROMPTS_AND_NOTES.md`，整理 AI 协作方式、关键 prompt、问题修正记录、runtime prompt 摘要、工具 schema 摘要和测试策略。
+  - README 增加 `AI Prompt 与问题解决记录` 章节，链接到 `PROMPTS_AND_NOTES.md`、`TASK_BREAKDOWN.md` 和 `TASK_TRACKING.md`。
+  - 说明原始 AI 对话记录来自本地 `codex_sessions/`，提交文档中采用结构化提炼形式。
 
 ## 验证记录
 
@@ -501,9 +505,14 @@ README 文档更新：
 仅文档改动，未运行测试。
 ```
 
+AI Prompt 与问题解决记录文档更新：
+
+```text
+仅文档改动，未运行测试。
+```
+
 ## 未完成
 
-- 步骤 14：补充 Prompt 与问题解决记录。
 - 步骤 15：整理 CLI 示例命令与录屏用例。
 - 步骤 16：整理 Web 示例流程与录屏用例。
 - 步骤 17：准备录屏。
@@ -544,6 +553,5 @@ README 文档更新：
 
 进入文档和录屏收尾：
 
-- 更新 `PROMPTS_AND_NOTES.md`，整理 DeepSeek thinking、tool_choice、stream、todo、search、Web 交互等关键约束。
 - 准备 CLI/Web 录屏脚本：普通对话、search、calculator、manage_todo_list、task list 持久化、session 删除与恢复。
 - 非必要不跑全量测试；文档类改动通常不跑测试。
