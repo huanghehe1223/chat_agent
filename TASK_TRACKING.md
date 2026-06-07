@@ -31,6 +31,7 @@
 - 新增配置读取测试：`tests/test_config.py`。
 - 实现 tool registry：`src/tools/registry.py`，支持注册工具、导出 OpenAI-compatible `tools` schema、解析并执行 `tool_calls`。
 - 实现 `calculator`：`src/tools/calculator.py`，使用 AST allowlist 安全计算简单数学表达式。
+  - 已增强 calculator：支持 `**`、`//`、`pi/e/tau` 常量，以及 `sqrt/sin/cos/tan/log/log10/abs/min/max/round` 等常用函数，仍使用 AST allowlist 禁止导入、属性访问等危险语法。
 - 实现 `search`：`src/tools/search.py`，使用 Tavily Search API 返回标题、URL 和摘要。
 - 实现 `manage_todo_list`：`src/tools/todo.py`，使用完整 `todoList` 同步方式管理 session 任务状态。
   - 工具参数要求一次传入完整任务列表。
@@ -48,7 +49,9 @@
   - assistant `tool_calls` 响应消息必须保留，用于和后续 `role=tool` 的 `tool_call_id` 对齐，但不能携带 `reasoning_content`。
 - 实现 session memory：`src/agent/memory.py`。
   - 支持按 session JSON 读写。
-  - 支持中文 session 名称；仍禁止路径穿越、路径分隔符和 Windows 非法文件名字符。
+  - 支持 `session_id` 与 `session_name` 分离：`session_id` 负责定位 JSON 文件，`session_name` 负责前端展示。
+  - 新建 session 时 `session_id` 使用 UUID 生成；未指定名称时默认 `session_name=New Chat`；展示名允许重复。
+  - 使用 `metadata.session_name_source` 区分默认名称、用户手动名称和模型生成名称，避免用户手动命名为 `New Chat` 时被自动覆盖。
   - 支持本地保存 user / assistant / tool 消息流水。
   - assistant 消息本地保留 `content`、`reasoning_content` 和 `tool_calls`。
   - 实现 `build_llm_context()`，从本地完整 `messages` 生成 LLM 请求上下文。
@@ -68,6 +71,10 @@
   - 完成 `MAX_AGENT_STEPS` 收束策略：达到最大步数且已有工具结果时，追加内部收束提示并进行一次不传 `tools` 的最终 LLM 调用。
   - 每次 LLM stream step 记录 session 级 `req_res.log`：`data/sessions/{session_id}.req_res.log`。
   - `req_res.log` 记录脱敏 request 和处理后的完整 response；流式 chunks 保留在 response 的 `_stream_chunks` 字段。
+  - 对空名创建的默认 `New Chat` session，在用户消息写入后后台调用 LLM 生成 session 标题；标题要求与第一条消息语言一致，中文不超过 10 个汉字，英文不超过 10 个单词；标题生成请求 `max_tokens=500`。
+  - 标题生成与主回答并行，不阻塞当前轮流式回复；同一 session 同时只允许一个标题生成任务，期间收到新消息会记录 pending retry。
+  - session 标题生成失败不影响正常 agent 对话，只在 metadata 中记录错误。
+  - session JSON 保存改为进程内读改写加锁，并通过临时文件 replace 原子落盘，避免标题线程和主回答线程并发写入时丢更新或读到半写文件。
   - 请求 system prompt 默认注入上海时区 runtime context：
     - `Current date`
     - `Current time`
@@ -75,7 +82,7 @@
     - `Locale: zh-CN`
 - 实现 CLI 基础交互：`src/main.py`。
   - 支持 `--session`。
-  - `--session` 可留空；留空时自动生成 `YYYYMMDD-HHMMSS-uuid` session id。
+  - `--session` 可留空；留空时自动生成 UUID session id。
   - 支持交互式多轮输入。
   - 支持 `--once` 单轮命令，方便录屏和 smoke test。
   - 默认开启 debug 展示，可用 `--no-debug` 关闭。
@@ -91,8 +98,10 @@
   - AgentRuntime 每次工具执行后立即追加 trace。
 - 新增 trace 测试：`tests/test_trace.py`。
 - 实现 Streamlit Web 页面：`src/web.py`。
-  - 左侧统一 session 管理：选择已有 session、输入 session、新建 session。
-  - 打开会话后展示当前 session 的全部对话记录。
+  - 左侧统一 session 管理：下拉框负责切换已有 session，输入框只服务于新建 session。
+  - 新建 session 时可输入展示名称；留空时使用 `New Chat`；底层文件名使用 UUID session id。
+  - 空名新建时复用已有未成功标题化的默认 `New Chat`，避免连续创建多个空名会话。
+  - 切换会话后展示当前 session 的全部对话记录。
   - assistant 消息支持展开查看 `reasoning_content`。
   - assistant `tool_calls` 以 `tool_use` 区域展示。
   - `role=tool` 工具结果以 `tool_result` 区域展示。
@@ -118,10 +127,10 @@
   - 不再等整轮 agent loop 完成后才统一折叠所有 live 气泡。
 - 完善 Web session 管理：
   - 当前 session 同步到 URL query param，刷新页面后保持原 session。
-  - session 列表按 session `metadata.created_at` 时间顺序展示；缺少 metadata 的旧文件退回文件修改时间排序。
-  - 首次进入且 URL 未指定 session 时，默认打开按时间排序后的第一个 session。
+  - session 列表按 session `metadata.created_at` 时间倒序展示；缺少 metadata 的旧文件退回文件修改时间排序。
+  - 首次进入且 URL 未指定 session 时，默认打开按时间倒序后的第一个 session；如果完全没有 session，则创建或复用空名默认 `New Chat`。
   - 侧边栏增加删除当前会话功能，同时删除 session JSON、Req/Res 日志和工具 trace。
-  - 删除当前会话后自动跳转到按时间排序后的第一个 session；如果没有剩余 session，则自动创建新 session。
+  - 删除当前会话后自动跳转到按时间倒序后的第一个 session；如果没有剩余 session，则自动创建空名默认 `New Chat`。
   - 删除确认 checkbox 和删除按钮使用 session 级 key，切换会话后不会复用上一个 session 的确认状态。
 - 修正 Web task list 实时更新：
   - runtime 执行 `manage_todo_list` 后先写入 session `memory.tasks`，立即发出 `task_list` 事件，再发出 `tool_result`。
@@ -133,7 +142,7 @@
   - 真实工具调用测试 helper 的请求记录也同步为 `65536`，避免日志样例仍显示旧值。
 - Streamlit Web 页面已完成并经过多轮迭代完善：
   - 完成与 CLI 共用的 session 管理、对话历史、reasoning、tool_use、tool_result、trace、req/res 展示。
-  - 支持工具调用、多轮对话、中文 session、刷新保持当前 session、按时间顺序展示 session。
+  - 支持工具调用、多轮对话、session 展示名、自动标题、刷新保持当前 session、按时间倒序展示 session。
   - 支持新建和删除当前 session，删除时同步清理 session JSON、req/res log 和 trace log。
   - task list 侧边栏 UI 已增强，并支持 `manage_todo_list` 调用后的实时持久化读取与重绘。
   - live 对话气泡行为已优化：reasoning/tool_use/tool_result 可在流式过程中按阶段自动折叠。
@@ -487,6 +496,76 @@ conda run -n mcp-learn pytest -q
 42 passed
 ```
 
+Web session 创建逻辑与 session id/name 分离验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_memory.py tests\test_web.py tests\test_runtime.py
+conda run -n mcp-learn pytest -q
+```
+
+结果：
+
+```text
+31 passed
+61 passed
+```
+
+Web 自动标题、空白 New Chat 复用和倒序展示验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_memory.py tests\test_web.py tests\test_runtime.py
+conda run -n mcp-learn pytest -q
+```
+
+结果：
+
+```text
+40 passed
+70 passed
+```
+
+Web 空名会话去重、无效标题状态修正和运行时兼容验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_memory.py tests\test_web.py tests\test_runtime.py
+conda run -n mcp-learn pytest -q
+```
+
+结果：
+
+```text
+45 passed
+75 passed
+```
+
+标题后台生成与 session 并发保存验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_runtime.py tests\test_memory.py
+conda run -n mcp-learn pytest -q tests\test_web.py tests\test_runtime.py tests\test_memory.py
+```
+
+结果：
+
+```text
+31 passed
+47 passed
+```
+
+Calculator 能力增强验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_tools.py
+conda run -n mcp-learn pytest -q tests\test_runtime.py tests\test_tools.py
+```
+
+结果：
+
+```text
+12 passed
+27 passed
+```
+
 CLI smoke test：
 
 ```bash
@@ -531,8 +610,15 @@ AI Prompt 与问题解决记录文档更新：
 - AgentRuntime 已使用 `stream_chat_events()`，CLI 可实时打印正式回答 delta；`--debug` 可展示 reasoning 和工具事件。
 - 每个 session 对应一个 req/res 日志文件：`data/sessions/{session_id}.req_res.log`，用于复盘真实请求和处理后响应；流式 chunks 保留在 response 的 `_stream_chunks` 字段。
 - runtime prompt 默认注入上海时区上下文，locale 固定为 `zh-CN`。
-- CLI session 可留空，留空时自动生成 `YYYYMMDD-HHMMSS-uuid` 格式 session id。
-- CLI/Web session 名称支持中文；底层直接保存为中文 JSON 文件名，同时继续拒绝 `..`、路径分隔符和 Windows 非法文件名字符。
+- CLI session 可留空，留空时自动生成 UUID session id。
+- `session_id` 与 `session_name` 分离：`session_id` 是底层定位 ID，用作 `data/sessions/{session_id}.json`、Req/Res 日志和 trace 日志文件名；`session_name` 是前端展示名，可重复。
+- 新建 Web session 时，输入框内容作为 `session_name`；留空时默认 `New Chat`；不再把输入内容当作底层文件名。
+- 空名创建的 `New Chat` 使用 `metadata.session_name_source=default` 标记；第一条用户消息写入后触发 LLM 标题生成，并把 source 更新为 `generated`。
+- 用户手动输入 `New Chat` 时 source 为 `user`，不会触发自动标题覆盖。
+- Web 空名新建会复用已有未成功标题化的默认 `New Chat`，避免连续创建多个空名会话；已有消息并完成标题生成后，才允许再次空名创建新会话。
+- 如果历史数据出现 `session_name=New Chat` 但 `session_name_source=generated` 的坏状态，读取时会降级回 `default`，并允许后续基于第一条用户 prompt 重新生成标题。
+- Web session 列表按创建时间倒序展示，最新会话排在最前。
+- 旧 session 文件仍保持可读；缺少 `session_name` 的旧文件使用原 `session_id` 或文件名作为展示名。
 - `reasoning_content` 只用于本地保存、调试和展示，不作为下一次 LLM 请求上下文发送。
 - 本地 session `messages` 是完整记录，不等同于 LLM 请求 payload；发送前必须通过上下文组装函数过滤和转换。
 - 请求上下文保留 `role=tool` 工具结果消息、assistant 正式回答消息和 assistant `tool_calls` 响应消息；assistant `tool_calls` 消息只包含协议所需字段，不携带 `reasoning_content`。

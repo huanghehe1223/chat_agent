@@ -18,9 +18,24 @@ def test_calculator_evaluates_safe_expression():
     }
 
 
+def test_calculator_supports_common_math_functions_and_constants():
+    assert calculate("sqrt(144)")["result"] == 12
+    assert calculate("sin(pi / 2)")["result"] == 1
+    assert calculate("log(100, 10)")["result"] == 2
+    assert calculate("max(2, 8, 5) + min(3, 4)")["result"] == 11
+    assert calculate("2 ** 8 + 7 // 3")["result"] == 258
+
+
 def test_calculator_rejects_unsafe_expression():
     with pytest.raises(CalculatorError):
         calculate("__import__('os').system('dir')")
+
+
+def test_calculator_rejects_unsafe_attribute_access_and_huge_exponents():
+    with pytest.raises(CalculatorError):
+        calculate("().__class__")
+    with pytest.raises(CalculatorError, match="exponent"):
+        calculate("10 ** 101")
 
 
 def test_default_registry_exports_openai_tool_schema_and_executes_call(tmp_path: Path):
@@ -46,6 +61,25 @@ def test_default_registry_exports_openai_tool_schema_and_executes_call(tmp_path:
     assert execution["tool_call_id"] == "call_1"
     assert execution["tool"] == "calculator"
     assert execution["result"]["result"] == 60
+
+
+def test_calculator_schema_mentions_functions_and_constants(tmp_path: Path):
+    registry = build_default_registry(
+        AgentConfig(deepseek_api_key="test-key"),
+        todo_store_path=tmp_path / "todos.json",
+    )
+
+    calculator_tool = next(
+        tool["function"]
+        for tool in registry.to_openai_tools()
+        if tool["function"]["name"] == "calculator"
+    )
+    schema_text = str(calculator_tool)
+
+    assert "sqrt" in schema_text
+    assert "sin" in schema_text
+    assert "pi" in schema_text
+    assert "**" in schema_text
 
 
 def test_manage_todo_list_schema_requires_full_list_status_updates(tmp_path: Path):

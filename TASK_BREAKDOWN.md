@@ -237,7 +237,8 @@ build_llm_context(session_messages, memory_summary) -> list[dict]
 
 ```json
 {
-  "session_id": "default",
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "session_name": "New Chat",
   "messages": [],
   "memory": {
     "tasks": {},
@@ -253,6 +254,8 @@ build_llm_context(session_messages, memory_summary) -> list[dict]
 
 字段说明：
 
+- `session_id`：会话定位 ID，新建会话时使用 UUID 生成，并作为 `data/sessions/{session_id}.json` 文件名。
+- `session_name`：用户可见会话名称，未指定时默认为 `New Chat`，允许重复；空名创建的默认会话会在第一条用户消息后调用 LLM 生成短标题。
 - `messages`：对话历史，用于短期上下文召回，保存 user / assistant / tool-call / tool result 等消息。
 - `memory.tasks`：结构化任务状态，用于跨轮次继续执行，例如任务 ID、标题、状态、进度、更新时间。
 - `memory.facts`：可选，保存用户明确表达过且相对稳定的信息。
@@ -348,7 +351,10 @@ Agent: 我查到当前任务状态是 ...
 
 计划使用 `streamlit` 做一个最小网页，原因是实现成本低，适合笔试录屏：
 
-- 左侧选择或输入 `session_id`。
+- 左侧通过下拉框切换已有会话。
+- 新建会话时可输入 `session_name`，留空则使用默认名称 `New Chat`；底层 `session_id` 始终自动生成 UUID。
+- 空名新建会话在未成功标题化前会被复用，避免连续创建多个默认 `New Chat`。
+- session 列表按创建时间倒序展示。
 - 中间展示多轮对话。
 - 底部输入用户消息。
 - 页面上展示最近一次工具调用 trace。

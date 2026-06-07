@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +13,14 @@ from uuid import uuid4
 
 from src.agent.config import AgentConfig, load_config
 from src.agent.llm import DeepSeekClient
-from src.agent.memory import SessionMemoryStore, build_llm_context
+from src.agent.memory import (
+    DEFAULT_SESSION_NAME,
+    SessionMemoryStore,
+    build_llm_context,
+    first_user_prompt,
+    new_session_id,
+    should_generate_session_title,
+)
 from src.agent.schemas import AssistantMessage
 from src.agent.trace import TraceLogger
 from src.tools.registry import ToolRegistry, build_default_registry
@@ -22,6 +30,17 @@ StreamEventHandler = Callable[[dict[str, Any]], None]
 
 
 class StreamingLLMClient(Protocol):
+    def chat(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]] | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        extra_body: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Return one assistant message."""
+
     def stream_chat_events(
         self,
         messages: list[dict[str, Any]],
@@ -70,6 +89,12 @@ class AgentRuntime:
     )
     DEFAULT_TIMEZONE = "Asia/Shanghai"
     DEFAULT_MAX_TOKENS = 65536
+    TITLE_MAX_TOKENS = 500
+    TITLE_SYSTEM_PROMPT = (
+        "你负责为聊天会话生成标题。只返回标题本身，不要解释，不要加引号。"
+        "标题必须和用户第一条消息使用相同语言。"
+        "中文标题不超过10个汉字；英文标题不超过10个单词；其他语言同样保持简短。"
+    )
     MAX_STEPS_FINAL_PROMPT = (
         "已达到本轮最大推理步数限制。请不要再调用工具，请根据当前已有的对话历史和工具结果给出最终答案。"
         "如果信息不足，请说明当前能确定的内容和缺失的信息。"
@@ -90,6 +115,9 @@ class AgentRuntime:
         self.registry = registry or build_default_registry(self.config)
         self.trace_logger = trace_logger or TraceLogger()
         self.system_prompt = system_prompt or self.DEFAULT_SYSTEM_PROMPT
+        self._title_generation_lock = threading.Lock()
+        self._title_generation_sessions: set[str] = set()
+        self._title_generation_pending_retry: set[str] = set()
 
     def run_turn(
         self,
@@ -102,6 +130,7 @@ class AgentRuntime:
         session_id = resolve_session_id(session_id)
         turn_id = uuid4().hex[:12]
         self.memory_store.append_user_message(session_id, user_input)
+        self._start_session_title_generation(session_id)
         tool_executions: list[dict[str, Any]] = []
         last_reasoning = ""
 
@@ -297,6 +326,73 @@ class AgentRuntime:
     def _system_prompt_with_runtime_context(self) -> str:
         return f"{self.system_prompt}\n\n{build_runtime_context()}"
 
+    def _start_session_title_generation(self, session_id: str) -> None:
+        session = self.memory_store.load(session_id)
+        if not should_generate_session_title(session):
+            return
+
+        with self._title_generation_lock:
+            if session_id in self._title_generation_sessions:
+                self._title_generation_pending_retry.add(session_id)
+                return
+            self._title_generation_sessions.add(session_id)
+
+        thread = threading.Thread(
+            target=self._generate_session_title_worker,
+            args=(session_id,),
+            daemon=True,
+            name=f"session-title-{session_id[:8]}",
+        )
+        thread.start()
+
+    def _generate_session_title_worker(self, session_id: str) -> None:
+        try:
+            self._maybe_generate_session_title(session_id)
+        finally:
+            with self._title_generation_lock:
+                self._title_generation_sessions.discard(session_id)
+                should_retry = session_id in self._title_generation_pending_retry
+                self._title_generation_pending_retry.discard(session_id)
+            if should_retry and should_generate_session_title(self.memory_store.load(session_id)):
+                self._start_session_title_generation(session_id)
+
+    def _maybe_generate_session_title(self, session_id: str) -> None:
+        session = self.memory_store.load(session_id)
+        if not should_generate_session_title(session):
+            return
+
+        prompt = first_user_prompt(session)
+        if not prompt:
+            return
+
+        try:
+            title = self._generate_session_title(prompt)
+        except Exception as exc:  # noqa: BLE001 - title failure should not break chat
+            self._record_session_title_error(session_id, exc)
+            return
+        if not _is_valid_generated_title(title):
+            self._record_session_title_error(session_id, ValueError("generated title was empty or default"))
+            return
+
+        self.memory_store.update_session_name(session_id, title)
+
+    def _generate_session_title(self, first_prompt: str) -> str:
+        message = self.llm_client.chat(
+            messages=[
+                {"role": "system", "content": self.TITLE_SYSTEM_PROMPT},
+                {"role": "user", "content": f"用户第一条消息：\n{first_prompt}"},
+            ],
+            tools=None,
+            temperature=0.2,
+            max_tokens=self.TITLE_MAX_TOKENS,
+        )
+        return _clean_session_title(message.get("content") or "")
+
+    def _record_session_title_error(self, session_id: str, exc: Exception) -> None:
+        session = self.memory_store.load(session_id)
+        session.setdefault("metadata", {})["title_generation_error"] = str(exc)
+        self.memory_store.save(session)
+
     def _write_req_res_log(
         self,
         session_id: str,
@@ -325,8 +421,7 @@ class AgentRuntime:
 def resolve_session_id(session_id: str | None) -> str:
     if session_id and session_id.strip():
         return session_id.strip()
-    now = datetime.now(ZoneInfo(AgentRuntime.DEFAULT_TIMEZONE))
-    return f"{now:%Y%m%d-%H%M%S}-{uuid4().hex[:8]}"
+    return new_session_id()
 
 
 def build_runtime_context() -> str:
@@ -349,3 +444,26 @@ def _mask_secret(value: str) -> str:
     if len(value) <= 8:
         return "***"
     return f"{value[:3]}***{value[-4:]}"
+
+
+def _clean_session_title(value: str) -> str:
+    title = " ".join(str(value or "").strip().split())
+    title = title.strip(' "\'`“”‘’.,，。:：;；#')
+    for prefix in ["标题：", "标题:", "Title:", "title:"]:
+        if title.startswith(prefix):
+            title = title[len(prefix):].strip(' "\'`“”‘’.,，。:：;；#')
+            break
+    if not title:
+        return DEFAULT_SESSION_NAME
+
+    words = title.split()
+    if len(words) > 1:
+        return " ".join(words[:10]).strip()
+    if len(title) > 10:
+        return title[:10].strip()
+    return title
+
+
+def _is_valid_generated_title(value: str) -> bool:
+    title = str(value or "").strip()
+    return bool(title) and title != DEFAULT_SESSION_NAME

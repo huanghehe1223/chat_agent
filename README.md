@@ -12,7 +12,7 @@
 ## 1. 功能概览
 
 - 多轮对话：同一个 session 内保留历史消息，后续提问可以基于已有上下文理解指代。
-- Session 维护：每个 session 独立保存到 `data/sessions/{session_id}.json`，支持中文 session 名称。
+- Session 维护：每个 session 独立保存到 `data/sessions/{session_id}.json`；`session_id` 使用 UUID 负责定位文件，`session_name` 负责前端展示，可重复，可使用中文。空名新建时先显示 `New Chat`，收到第一条用户消息后会调用 LLM 生成 10 字以内的同语言短标题；未成功标题化前会复用同一个默认 `New Chat`，不连续创建多个空名会话。
 - 真实 LLM API：通过 OpenAI SDK 调用 DeepSeek API，默认开启 thinking mode，并解析 `reasoning_content`、正式回答 `content` 和原生 `tool_calls`。
 - 自建 Agent loop：接收用户输入，调用 LLM 判断是否需要工具，执行工具，把 `role=tool` 结果写回上下文，继续循环直到最终回答。
 - 工具调用：内置 `calculator`、`search`、`manage_todo_list` 三个工具。
@@ -20,7 +20,7 @@
 - 最大步数限制：单轮最多执行 `MAX_AGENT_STEPS` 次 Agent 决策；达到上限后进入无工具收束回答。
 - 基本异常处理：配置缺失、LLM 请求异常、工具参数错误、工具运行异常、session 文件 JSON 错误等都有明确错误路径。
 - Trace 与 Req/Res 日志：工具执行日志保存到 `data/traces/`，LLM 请求与响应摘要保存到 `data/sessions/*.req_res.log`。
-- Web 展示：支持多 session 切换、刷新后恢复对话、实时流式输出、reasoning 折叠展示、tool_use/tool_result 展示、任务列表实时更新、日志查看和删除 session。
+- Web 展示：支持多 session 倒序切换、刷新后恢复对话、自动标题、实时流式输出、reasoning 折叠展示、tool_use/tool_result 展示、任务列表实时更新、日志查看和删除 session。
 
 ## 2. 技术实现
 
@@ -85,13 +85,21 @@ REQUEST_TIMEOUT=60
 CLI 运行：
 
 ```bash
-python -m src.main --session demo
+python -m src.main
+```
+
+不传 `--session` 时会自动生成 UUID `session_id`。如果要继续已有会话，可以传入底层定位用的 `session_id`；它不是 Web 侧展示用的 `session_name`。
+
+继续已有 CLI session：
+
+```bash
+python -m src.main --session 550e8400-e29b-41d4-a716-446655440000
 ```
 
 单轮 CLI smoke test：
 
 ```bash
-python -m src.main --session cli-smoke --once "帮我算一下 (12 + 8) * 3"
+python -m src.main --once "帮我算一下 (12 + 8) * 3"
 ```
 
 Web 运行：
@@ -129,7 +137,8 @@ http://localhost:8501
 
 ```json
 {
-  "session_id": "demo",
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "session_name": "New Chat",
   "messages": [],
   "memory": {
     "tasks": {},
@@ -146,6 +155,8 @@ http://localhost:8501
 放置方式：
 
 - `messages`：保存完整本地聊天流水，包括 user、assistant、assistant tool_calls、tool result。
+- `session_id`：会话定位 ID，新建会话时使用 UUID 生成，并作为 JSON、Req/Res 和 trace 日志文件名。
+- `session_name`：用户可见会话名称，未指定时默认为 `New Chat`，允许重复；只有空名创建的默认会话会在第一条用户消息后自动生成标题，用户手动命名为 `New Chat` 时不会被自动覆盖。
 - `memory.tasks`：保存跨轮次任务状态，来自 `manage_todo_list` 的完整 task list。
 - `memory.facts`、`memory.preferences`：预留字段，当前主要演示任务状态 memory。
 - `data/traces/`：保存工具调用 trace，不混入聊天历史。
@@ -165,9 +176,9 @@ http://localhost:8501
 
 `calculator`
 
-- 用途：计算简单数学表达式。
-- 实现：使用 AST allowlist，只允许数字、运算符、括号和空格，避免直接 `eval`。
-- 示例：`帮我算一下 889 * (554 - 3)`。
+- 用途：计算数学表达式。
+- 实现：使用 AST allowlist，支持 `+ - * / // % **`、括号、常量 `pi/e/tau`，以及 `sqrt/sin/cos/tan/log/log10/abs/min/max/round` 等常用函数，避免直接 `eval`。
+- 示例：`帮我算一下 sqrt(144) + sin(pi / 2)`。
 
 `search`
 

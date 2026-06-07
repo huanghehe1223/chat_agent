@@ -6988,3 +6988,1428 @@
     "type": "function"
   }
 }
+
+====================================================================================================
+{
+  "time": "2026-06-07T12:28:56.723682+00:00",
+  "test_name": "test_deepseek_calls_and_executes_calculator_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 calculator 工具计算 (12 + 8) * 3，参数 expression 必须是这个表达式。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "calculator",
+          "description": "Calculate a simple arithmetic expression using numbers, operators, and parentheses.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Arithmetic expression, for example: (12 + 8) * 3."
+              }
+            },
+            "required": [
+              "expression"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "好的，我来调用 calculator 工具计算 (12 + 8) * 3。",
+    "reasoning_content": "用户要求调用 calculator 工具计算 (12 + 8) * 3，参数 expression 必须是 \"(12 + 8) * 3\"。我来调用工具。",
+    "tool_calls": [
+      {
+        "id": "call_00_ubp3d7OyUxFIYDmYVuiS7938",
+        "function": {
+          "arguments": "{\"expression\": \"(12 + 8) * 3\"}",
+          "name": "calculator"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "calculator",
+    "arguments": {
+      "expression": "(12 + 8) * 3"
+    },
+    "result": {
+      "expression": "(12 + 8) * 3",
+      "result": 60
+    },
+    "tool_call_id": "call_00_ubp3d7OyUxFIYDmYVuiS7938",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T12:28:58.522807+00:00",
+  "test_name": "test_deepseek_calls_and_executes_todo_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 manage_todo_list 工具提交完整任务列表。参数必须为 todoList=[{\"id\":1,\"title\":\"调研最小 Agent runtime\",\"status\":\"in-progress\"}]。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "manage_todo_list",
+          "description": "Manage the complete session todo list for planning and progress tracking. Call this tool whenever the user asks to create a task list or gives complex multi-step work. You must also call it immediately whenever any task status changes: before starting a task, submit the full list with exactly that task marked in-progress; after finishing a task, submit the full list again with that task marked completed before giving the final answer or moving on. Always pass the complete todoList, including all existing and new items; never send only the changed item. Do not call this for single trivial tasks or pure conversation. Todo states: not-started, in-progress (at most one item), completed.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "todoList": {
+                "type": "array",
+                "description": "Complete array of all session todo items after this update. Must include ALL items - both existing and new - every time a task is created, started, or completed. Status updates must be committed through this full-list snapshot before the final user-facing answer.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number",
+                      "description": "Unique identifier for the todo. Use sequential numbers starting from 1."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Concise action-oriented todo label."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "not-started",
+                        "in-progress",
+                        "completed"
+                      ],
+                      "description": "not-started: not begun | in-progress: currently working (max 1) | completed: fully finished and already reflected in the submitted full todoList"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "status"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "todoList"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "",
+    "reasoning_content": "用户要求调用 manage_todo_list 工具，提交一个任务列表，其中包含一个任务：id=1, title=\"调研最小 Agent runtime\", status=\"in-progress\"。",
+    "tool_calls": [
+      {
+        "id": "call_00_B3x7sSrMGTKQoYBTuGfL6501",
+        "function": {
+          "arguments": "{\"todoList\": [{\"id\": 1, \"title\": \"调研最小 Agent runtime\", \"status\": \"in-progress\"}]}",
+          "name": "manage_todo_list"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "manage_todo_list",
+    "arguments": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ]
+    },
+    "result": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ],
+      "summary": {
+        "total": 1,
+        "not_started": 0,
+        "in_progress": 1,
+        "completed": 0
+      }
+    },
+    "tool_call_id": "call_00_B3x7sSrMGTKQoYBTuGfL6501",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T12:29:02.335954+00:00",
+  "test_name": "test_deepseek_calls_and_executes_search_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 search 工具搜索 \"DeepSeek API 怎么调用\"，max_results 设置为 2。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "search",
+          "description": "Search the web with Tavily and return titles, URLs, and summaries. Use this tool when the user explicitly asks to search/look up/check online, when the question depends on current or time-sensitive information, or when your own knowledge is insufficient to answer reliably. Do not use search for stable general knowledge, simple calculations, pure conversation, or questions that can be answered confidently from existing context.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Focused search query keywords. Include dates, names, products, locations, or other concrete constraints when recency or precision matters."
+              },
+              "max_results": {
+                "type": "integer",
+                "description": "Number of results to return, from 1 to 5. Use 3 by default unless the user needs broader coverage.",
+                "minimum": 1,
+                "maximum": 5
+              }
+            },
+            "required": [
+              "query"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "好的，我来调用 search 工具进行搜索。",
+    "reasoning_content": "用户要求调用 search 工具，搜索 \"DeepSeek API 怎么调用\"，max_results 设置为 2。我需要调用这个工具。",
+    "tool_calls": [
+      {
+        "id": "call_00_MkQYanOHtaqc1fOOlGow7727",
+        "function": {
+          "arguments": "{\"query\": \"DeepSeek API 怎么调用\", \"max_results\": 2}",
+          "name": "search"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "search",
+    "arguments": {
+      "query": "DeepSeek API 怎么调用",
+      "max_results": 2
+    },
+    "result": {
+      "query": "DeepSeek API 怎么调用",
+      "answer": "To call DeepSeek API, obtain an API key from the DeepSeek platform, then use it in your requests with the Authorization header set to Bearer {API_KEY}.",
+      "results": [
+        {
+          "title": "DeepSeek-R1 API 怎么调用？一文讲述 - 知乎专栏",
+          "url": "https://zhuanlan.zhihu.com/p/21375525321",
+          "content": "在本教程中，我将指导您如何获取DeepSeek API 密钥，并演示如何使用该密钥进行API 调试。 最新，更简单的调用方法，直接克隆项目填入API Key 即可。"
+        },
+        {
+          "title": "如何调用 DeepSeek-V3 API ？图文详细教程_测试工具_清尘沐歌-DeepSeek技术社区",
+          "url": "https://deepseek.csdn.net/67ab1fa079aaf67875cb9e1e.html",
+          "content": "# logo DeepSeek技术社区. ### DeepSeek技术社区. # 如何调用 DeepSeek-V3 API ？图文详细教程. **原文链接：****DeepSeek API 调用教程，图文讲解**. 在本教程中，我将指导您如何获取 DeepSeek API 密钥，并演示如何使用该密钥进行 API 调试，以此来调用 DeepSeek-V3 API。. ### 登录 DeepSeek 开放平台. 首先，访问 DeepSeek 开放平台并登录（目前平台可能因高流量而暂时维护）。登录后，您将获得一个 `api_key`，而首次注册的用户还会收到一些免费的 tokens 额度（一般是 10 元）。. ### 创建并复制 API Key. 在 DeepSeek 开放平台左侧边栏中，找到 **API Keys** 选项，点击进入后创建一个新的 API Key。创建完成后，请将 API Key 复制并保存在一个安全且易于访问的地方。. 请妥善保管您的 API Key。出于安全考虑，您将无法通过平台界面再次查看该密钥。如果密钥丢失，您将需要重新生成一个新的。. ### 调用 DeepSeek API. 获得 API Key 后，您可以开始调用 DeepSeek API。官方 API 文档可参考：DeepSeek API 文档。. 通过指定 `model='deepseek-chat'` 即可调用 **DeepSeek-V3**。. 通过指定 `model='deepseek-reasoner'`，即可调用 **DeepSeek-R1**。. 如果你还没有用过 Apifox，强烈推荐去使用，它是一个集成了 API 文档、API 调试、API 设计、API 测试、API Mock、自动化测试的 API 一体化协作平台。. #### 设置 API Key. 登录 Apifox 并在里面新建一个 HTTP 项目后，在项目右上角的 “环境管理” 中，点击“正式环境”，在服务前置 URL 那里填写 `https://api.deepseek.com`，然后添加一个环境变量，可以将其命名为 `API_KEY`，这个环境变量的值就是上面创建的 DeepSeek API 的 API Key，添加完成后保存即可。. API Key 设置完成后，在项目里新建一个接口，然后将 DeepSeek API 文档里的对话 API 的 curl 复制下来。. 回到 Apifox，将这个 cURL 直接按 \"Ctrl + V\" 粘贴到接口路径那里即可，Apifox 会自动解析这里的 cURL。. 在解析出来的接口中，点击 Headers，然后更改 Authorization 的参数值，将其更改为 `Bearer { {API_KEY}}`，这样在发送请求的时候才会携带存储在环境变量中的 `API_KEY`。. 登录 DeepSeek 开放平台后，注册用户可免费获赠 10 元 tokens，并创建 API Key 保存至安全位置。通过 Apifox 集成 DeepSeek API，可快速完成 API 调试。配置环境变量后，将 DeepSeek 提供的 cURL 导入 Apifox，并设置 Authorization 为 `Bearer { {API_KEY}}`。随后，切换至正式环境发送请求，根据需要修改参数即可实现对话，支持流式或整体输出，提升开发效率。. 知识库权限下放至段落级：DeepSeek RAG 增量索引与 ACL 同步的工程实践."
+        }
+      ]
+    },
+    "tool_call_id": "call_00_MkQYanOHtaqc1fOOlGow7727",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T12:34:19.001950+00:00",
+  "test_name": "test_deepseek_calls_and_executes_calculator_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 calculator 工具计算 (12 + 8) * 3，参数 expression 必须是这个表达式。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "calculator",
+          "description": "Calculate a simple arithmetic expression using numbers, operators, and parentheses.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Arithmetic expression, for example: (12 + 8) * 3."
+              }
+            },
+            "required": [
+              "expression"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "好的，我现在调用 calculator 工具来计算这个表达式。",
+    "reasoning_content": "用户要求调用 calculator 工具来计算 (12 + 8) * 3，并且参数 expression 必须是这个表达式。我来调用工具。",
+    "tool_calls": [
+      {
+        "id": "call_00_hXdthMDXWMMXbWnvWt4c5424",
+        "function": {
+          "arguments": "{\"expression\": \"(12 + 8) * 3\"}",
+          "name": "calculator"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "calculator",
+    "arguments": {
+      "expression": "(12 + 8) * 3"
+    },
+    "result": {
+      "expression": "(12 + 8) * 3",
+      "result": 60
+    },
+    "tool_call_id": "call_00_hXdthMDXWMMXbWnvWt4c5424",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T12:34:20.572576+00:00",
+  "test_name": "test_deepseek_calls_and_executes_todo_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 manage_todo_list 工具提交完整任务列表。参数必须为 todoList=[{\"id\":1,\"title\":\"调研最小 Agent runtime\",\"status\":\"in-progress\"}]。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "manage_todo_list",
+          "description": "Manage the complete session todo list for planning and progress tracking. Call this tool whenever the user asks to create a task list or gives complex multi-step work. You must also call it immediately whenever any task status changes: before starting a task, submit the full list with exactly that task marked in-progress; after finishing a task, submit the full list again with that task marked completed before giving the final answer or moving on. Always pass the complete todoList, including all existing and new items; never send only the changed item. Do not call this for single trivial tasks or pure conversation. Todo states: not-started, in-progress (at most one item), completed.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "todoList": {
+                "type": "array",
+                "description": "Complete array of all session todo items after this update. Must include ALL items - both existing and new - every time a task is created, started, or completed. Status updates must be committed through this full-list snapshot before the final user-facing answer.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number",
+                      "description": "Unique identifier for the todo. Use sequential numbers starting from 1."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Concise action-oriented todo label."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "not-started",
+                        "in-progress",
+                        "completed"
+                      ],
+                      "description": "not-started: not begun | in-progress: currently working (max 1) | completed: fully finished and already reflected in the submitted full todoList"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "status"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "todoList"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "",
+    "reasoning_content": "The user wants me to call the manage_todo_list tool with a specific parameter. Let me do that.",
+    "tool_calls": [
+      {
+        "id": "call_00_T15rDPNtHuxgMpcvgSSN6799",
+        "function": {
+          "arguments": "{\"todoList\": [{\"id\":1,\"title\":\"调研最小 Agent runtime\",\"status\":\"in-progress\"}]}",
+          "name": "manage_todo_list"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "manage_todo_list",
+    "arguments": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ]
+    },
+    "result": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ],
+      "summary": {
+        "total": 1,
+        "not_started": 0,
+        "in_progress": 1,
+        "completed": 0
+      }
+    },
+    "tool_call_id": "call_00_T15rDPNtHuxgMpcvgSSN6799",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T12:34:23.145012+00:00",
+  "test_name": "test_deepseek_calls_and_executes_search_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 search 工具搜索 \"DeepSeek API 怎么调用\"，max_results 设置为 2。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "search",
+          "description": "Search the web with Tavily and return titles, URLs, and summaries. Use this tool when the user explicitly asks to search/look up/check online, when the question depends on current or time-sensitive information, or when your own knowledge is insufficient to answer reliably. Do not use search for stable general knowledge, simple calculations, pure conversation, or questions that can be answered confidently from existing context.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Focused search query keywords. Include dates, names, products, locations, or other concrete constraints when recency or precision matters."
+              },
+              "max_results": {
+                "type": "integer",
+                "description": "Number of results to return, from 1 to 5. Use 3 by default unless the user needs broader coverage.",
+                "minimum": 1,
+                "maximum": 5
+              }
+            },
+            "required": [
+              "query"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "",
+    "reasoning_content": "用户要求调用 search 工具，搜索 \"DeepSeek API 怎么调用\"，max_results 设置为 2。我来调用这个工具。",
+    "tool_calls": [
+      {
+        "id": "call_00_OUeiSUNTYBhXW8J0w79b1103",
+        "function": {
+          "arguments": "{\"query\": \"DeepSeek API 怎么调用\", \"max_results\": 2}",
+          "name": "search"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "search",
+    "arguments": {
+      "query": "DeepSeek API 怎么调用",
+      "max_results": 2
+    },
+    "result": {
+      "query": "DeepSeek API 怎么调用",
+      "answer": "To call DeepSeek API, obtain an API key from the DeepSeek platform, then use it in your requests with the Authorization header set to Bearer {API_KEY}.",
+      "results": [
+        {
+          "title": "DeepSeek-R1 API 怎么调用？一文讲述 - 知乎专栏",
+          "url": "https://zhuanlan.zhihu.com/p/21375525321",
+          "content": "在本教程中，我将指导您如何获取DeepSeek API 密钥，并演示如何使用该密钥进行API 调试。 最新，更简单的调用方法，直接克隆项目填入API Key 即可。"
+        },
+        {
+          "title": "如何调用 DeepSeek-V3 API ？图文详细教程_测试工具_清尘沐歌-DeepSeek技术社区",
+          "url": "https://deepseek.csdn.net/67ab1fa079aaf67875cb9e1e.html",
+          "content": "# logo DeepSeek技术社区. ### DeepSeek技术社区. # 如何调用 DeepSeek-V3 API ？图文详细教程. **原文链接：****DeepSeek API 调用教程，图文讲解**. 在本教程中，我将指导您如何获取 DeepSeek API 密钥，并演示如何使用该密钥进行 API 调试，以此来调用 DeepSeek-V3 API。. ### 登录 DeepSeek 开放平台. 首先，访问 DeepSeek 开放平台并登录（目前平台可能因高流量而暂时维护）。登录后，您将获得一个 `api_key`，而首次注册的用户还会收到一些免费的 tokens 额度（一般是 10 元）。. ### 创建并复制 API Key. 在 DeepSeek 开放平台左侧边栏中，找到 **API Keys** 选项，点击进入后创建一个新的 API Key。创建完成后，请将 API Key 复制并保存在一个安全且易于访问的地方。. 请妥善保管您的 API Key。出于安全考虑，您将无法通过平台界面再次查看该密钥。如果密钥丢失，您将需要重新生成一个新的。. ### 调用 DeepSeek API. 获得 API Key 后，您可以开始调用 DeepSeek API。官方 API 文档可参考：DeepSeek API 文档。. 通过指定 `model='deepseek-chat'` 即可调用 **DeepSeek-V3**。. 通过指定 `model='deepseek-reasoner'`，即可调用 **DeepSeek-R1**。. 如果你还没有用过 Apifox，强烈推荐去使用，它是一个集成了 API 文档、API 调试、API 设计、API 测试、API Mock、自动化测试的 API 一体化协作平台。. #### 设置 API Key. 登录 Apifox 并在里面新建一个 HTTP 项目后，在项目右上角的 “环境管理” 中，点击“正式环境”，在服务前置 URL 那里填写 `https://api.deepseek.com`，然后添加一个环境变量，可以将其命名为 `API_KEY`，这个环境变量的值就是上面创建的 DeepSeek API 的 API Key，添加完成后保存即可。. API Key 设置完成后，在项目里新建一个接口，然后将 DeepSeek API 文档里的对话 API 的 curl 复制下来。. 回到 Apifox，将这个 cURL 直接按 \"Ctrl + V\" 粘贴到接口路径那里即可，Apifox 会自动解析这里的 cURL。. 在解析出来的接口中，点击 Headers，然后更改 Authorization 的参数值，将其更改为 `Bearer { {API_KEY}}`，这样在发送请求的时候才会携带存储在环境变量中的 `API_KEY`。. 登录 DeepSeek 开放平台后，注册用户可免费获赠 10 元 tokens，并创建 API Key 保存至安全位置。通过 Apifox 集成 DeepSeek API，可快速完成 API 调试。配置环境变量后，将 DeepSeek 提供的 cURL 导入 Apifox，并设置 Authorization 为 `Bearer { {API_KEY}}`。随后，切换至正式环境发送请求，根据需要修改参数即可实现对话，支持流式或整体输出，提升开发效率。. 知识库权限下放至段落级：DeepSeek RAG 增量索引与 ACL 同步的工程实践."
+        }
+      ]
+    },
+    "tool_call_id": "call_00_OUeiSUNTYBhXW8J0w79b1103",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T12:59:33.438326+00:00",
+  "test_name": "test_deepseek_calls_and_executes_calculator_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 calculator 工具计算 (12 + 8) * 3，参数 expression 必须是这个表达式。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "calculator",
+          "description": "Calculate a simple arithmetic expression using numbers, operators, and parentheses.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Arithmetic expression, for example: (12 + 8) * 3."
+              }
+            },
+            "required": [
+              "expression"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "好的，我来调用 calculator 工具计算这个表达式。",
+    "reasoning_content": "用户要求我调用 calculator 工具计算 (12 + 8) * 3，参数 expression 必须是这个表达式。我来调用。",
+    "tool_calls": [
+      {
+        "id": "call_00_YC5jB1NbVwfn4NIQLLY09423",
+        "function": {
+          "arguments": "{\"expression\": \"(12 + 8) * 3\"}",
+          "name": "calculator"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "calculator",
+    "arguments": {
+      "expression": "(12 + 8) * 3"
+    },
+    "result": {
+      "expression": "(12 + 8) * 3",
+      "result": 60
+    },
+    "tool_call_id": "call_00_YC5jB1NbVwfn4NIQLLY09423",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T12:59:34.688993+00:00",
+  "test_name": "test_deepseek_calls_and_executes_todo_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 manage_todo_list 工具提交完整任务列表。参数必须为 todoList=[{\"id\":1,\"title\":\"调研最小 Agent runtime\",\"status\":\"in-progress\"}]。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "manage_todo_list",
+          "description": "Manage the complete session todo list for planning and progress tracking. Call this tool whenever the user asks to create a task list or gives complex multi-step work. You must also call it immediately whenever any task status changes: before starting a task, submit the full list with exactly that task marked in-progress; after finishing a task, submit the full list again with that task marked completed before giving the final answer or moving on. Always pass the complete todoList, including all existing and new items; never send only the changed item. Do not call this for single trivial tasks or pure conversation. Todo states: not-started, in-progress (at most one item), completed.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "todoList": {
+                "type": "array",
+                "description": "Complete array of all session todo items after this update. Must include ALL items - both existing and new - every time a task is created, started, or completed. Status updates must be committed through this full-list snapshot before the final user-facing answer.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number",
+                      "description": "Unique identifier for the todo. Use sequential numbers starting from 1."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Concise action-oriented todo label."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "not-started",
+                        "in-progress",
+                        "completed"
+                      ],
+                      "description": "not-started: not begun | in-progress: currently working (max 1) | completed: fully finished and already reflected in the submitted full todoList"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "status"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "todoList"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "",
+    "reasoning_content": "The user wants me to call the manage_todo_list tool with a specific parameter. Let me do that.",
+    "tool_calls": [
+      {
+        "id": "call_00_AfCLnaroIkDi9mf88E5Q8956",
+        "function": {
+          "arguments": "{\"todoList\": [{\"id\":1,\"title\":\"调研最小 Agent runtime\",\"status\":\"in-progress\"}]}",
+          "name": "manage_todo_list"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "manage_todo_list",
+    "arguments": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ]
+    },
+    "result": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ],
+      "summary": {
+        "total": 1,
+        "not_started": 0,
+        "in_progress": 1,
+        "completed": 0
+      }
+    },
+    "tool_call_id": "call_00_AfCLnaroIkDi9mf88E5Q8956",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T12:59:38.320409+00:00",
+  "test_name": "test_deepseek_calls_and_executes_search_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 search 工具搜索 \"DeepSeek API 怎么调用\"，max_results 设置为 2。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "search",
+          "description": "Search the web with Tavily and return titles, URLs, and summaries. Use this tool when the user explicitly asks to search/look up/check online, when the question depends on current or time-sensitive information, or when your own knowledge is insufficient to answer reliably. Do not use search for stable general knowledge, simple calculations, pure conversation, or questions that can be answered confidently from existing context.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Focused search query keywords. Include dates, names, products, locations, or other concrete constraints when recency or precision matters."
+              },
+              "max_results": {
+                "type": "integer",
+                "description": "Number of results to return, from 1 to 5. Use 3 by default unless the user needs broader coverage.",
+                "minimum": 1,
+                "maximum": 5
+              }
+            },
+            "required": [
+              "query"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "好的，我来调用 search 工具搜索相关信息。",
+    "reasoning_content": "用户要求调用search工具，搜索\"DeepSeek API 怎么调用\"，max_results设置为2。我来调用这个工具。",
+    "tool_calls": [
+      {
+        "id": "call_00_FFp0oiF62PPrz4MA41ky2582",
+        "function": {
+          "arguments": "{\"query\": \"DeepSeek API 怎么调用\", \"max_results\": 2}",
+          "name": "search"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "search",
+    "arguments": {
+      "query": "DeepSeek API 怎么调用",
+      "max_results": 2
+    },
+    "result": {
+      "query": "DeepSeek API 怎么调用",
+      "answer": "To call DeepSeek API, apply for an API key, set the base URL, and use it with compatible SDKs or software. Example: `curl https://api.deepseek.com/chat/completions -H \"Content-Type: application/json\" -d '{\"role\": \"system\", \"content\": \"You are a helpful assistant.\"}'`.",
+      "results": [
+        {
+          "title": "DeepSeek-R1 API 怎么调用？一文讲述 - 知乎专栏",
+          "url": "https://zhuanlan.zhihu.com/p/21375525321",
+          "content": "在本教程中，我将指导您如何获取DeepSeek API 密钥，并演示如何使用该密钥进行API 调试。 最新，更简单的调用方法，直接克隆项目填入API Key 即可。"
+        },
+        {
+          "title": "首次调用API",
+          "url": "https://api-docs.deepseek.com/zh-cn",
+          "content": "# 首次调用 API. DeepSeek API 使用与 OpenAI/Anthropic 兼容的 API 格式，通过修改配置，您可以使用 OpenAI/Anthropic SDK 来访问 DeepSeek API，或使用与 OpenAI/Anthropic API 兼容的软件。. | base\\_url (OpenAI) | `https://api.deepseek.com` |. | base\\_url (Anthropic) | `https://api.deepseek.com/anthropic` |. | api\\_key | apply for an API key |. | model\\* | `deepseek-v4-flash` `deepseek-v4-pro` `deepseek-chat` (将于 2026/07/24 弃用) `deepseek-reasoner` (将于 2026/07/24 弃用) |. `https://api.deepseek.com/anthropic`. \\* deepseek-chat 与 deepseek-reasoner 两个模型名将于北京时间 2026/07/24 23:59 弃用。出于兼容考虑，二者分别对应 deepseek-v4-flash 的非思考与思考模式。. ## 接入 Agent 工具​. DeepSeek API 已接入多种主流 AI Agent 与编程助手工具。如果你使用 Claude Code、GitHub Copilot、OpenCode 等工具，可以直接将 DeepSeek 作为后端模型，无需编写代码即可开始使用。. ## 调用对话 API​. 在创建 API key 之后，你可以使用以下样例脚本，通过 OpenAI API 格式来访问 DeepSeek 模型。样例为非流式输出，您可以将 stream 设置为 true 来使用流式输出。. Anthropic API 格式的访问样例，请参考Anthropic API。. `curl https://api.deepseek.com/chat/completions \\. -H \"Content-Type: application/json\" \\. {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},. `# Please install OpenAI SDK first: `pip3 install openai`. api_key=os.environ.get('DEEPSEEK_API_KEY'),. base_url=\"https://api.deepseek.com\"). response = client.chat.completions.create(. print(response.choices[0].message.content)`. const completion = await openai.chat.completions.create({. messages: [{ role: \"system\", content: \"You are a helpful assistant.\" }],. console.log(completion.choices[0].message.content);."
+        }
+      ]
+    },
+    "tool_call_id": "call_00_FFp0oiF62PPrz4MA41ky2582",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T13:04:33.668910+00:00",
+  "test_name": "test_deepseek_calls_and_executes_calculator_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 calculator 工具计算 (12 + 8) * 3，参数 expression 必须是这个表达式。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "calculator",
+          "description": "Calculate a simple arithmetic expression using numbers, operators, and parentheses.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Arithmetic expression, for example: (12 + 8) * 3."
+              }
+            },
+            "required": [
+              "expression"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "好的，我现在调用 calculator 工具来计算 (12 + 8) * 3。",
+    "reasoning_content": "用户要求调用calculator工具计算表达式 (12 + 8) * 3，参数expression必须是这个表达式。我来调用工具。",
+    "tool_calls": [
+      {
+        "id": "call_00_y2EUFxKQtvfvKN77vgIe5850",
+        "function": {
+          "arguments": "{\"expression\": \"(12 + 8) * 3\"}",
+          "name": "calculator"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "calculator",
+    "arguments": {
+      "expression": "(12 + 8) * 3"
+    },
+    "result": {
+      "expression": "(12 + 8) * 3",
+      "result": 60
+    },
+    "tool_call_id": "call_00_y2EUFxKQtvfvKN77vgIe5850",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T13:04:35.497317+00:00",
+  "test_name": "test_deepseek_calls_and_executes_todo_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 manage_todo_list 工具提交完整任务列表。参数必须为 todoList=[{\"id\":1,\"title\":\"调研最小 Agent runtime\",\"status\":\"in-progress\"}]。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "manage_todo_list",
+          "description": "Manage the complete session todo list for planning and progress tracking. Call this tool whenever the user asks to create a task list or gives complex multi-step work. You must also call it immediately whenever any task status changes: before starting a task, submit the full list with exactly that task marked in-progress; after finishing a task, submit the full list again with that task marked completed before giving the final answer or moving on. Always pass the complete todoList, including all existing and new items; never send only the changed item. Do not call this for single trivial tasks or pure conversation. Todo states: not-started, in-progress (at most one item), completed.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "todoList": {
+                "type": "array",
+                "description": "Complete array of all session todo items after this update. Must include ALL items - both existing and new - every time a task is created, started, or completed. Status updates must be committed through this full-list snapshot before the final user-facing answer.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number",
+                      "description": "Unique identifier for the todo. Use sequential numbers starting from 1."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Concise action-oriented todo label."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "not-started",
+                        "in-progress",
+                        "completed"
+                      ],
+                      "description": "not-started: not begun | in-progress: currently working (max 1) | completed: fully finished and already reflected in the submitted full todoList"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "status"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "todoList"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "",
+    "reasoning_content": "用户要求调用 manage_todo_list 工具，并且明确指定了参数。让我直接调用。",
+    "tool_calls": [
+      {
+        "id": "call_00_KJmNvv6tpHFrxD0zeWAj4096",
+        "function": {
+          "arguments": "{\"todoList\": [{\"id\":1,\"title\":\"调研最小 Agent runtime\",\"status\":\"in-progress\"}]}",
+          "name": "manage_todo_list"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "manage_todo_list",
+    "arguments": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ]
+    },
+    "result": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ],
+      "summary": {
+        "total": 1,
+        "not_started": 0,
+        "in_progress": 1,
+        "completed": 0
+      }
+    },
+    "tool_call_id": "call_00_KJmNvv6tpHFrxD0zeWAj4096",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T13:04:38.251105+00:00",
+  "test_name": "test_deepseek_calls_and_executes_search_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 search 工具搜索 \"DeepSeek API 怎么调用\"，max_results 设置为 2。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "search",
+          "description": "Search the web with Tavily and return titles, URLs, and summaries. Use this tool when the user explicitly asks to search/look up/check online, when the question depends on current or time-sensitive information, or when your own knowledge is insufficient to answer reliably. Do not use search for stable general knowledge, simple calculations, pure conversation, or questions that can be answered confidently from existing context.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Focused search query keywords. Include dates, names, products, locations, or other concrete constraints when recency or precision matters."
+              },
+              "max_results": {
+                "type": "integer",
+                "description": "Number of results to return, from 1 to 5. Use 3 by default unless the user needs broader coverage.",
+                "minimum": 1,
+                "maximum": 5
+              }
+            },
+            "required": [
+              "query"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "好的，我现在来调用 search 工具进行搜索。",
+    "reasoning_content": "用户要求我调用 search 工具搜索 \"DeepSeek API 怎么调用\"，并将 max_results 设置为 2。我来执行这个工具调用。",
+    "tool_calls": [
+      {
+        "id": "call_00_FQthain4wyEtDNNIJnW71678",
+        "function": {
+          "arguments": "{\"query\": \"DeepSeek API 怎么调用\", \"max_results\": 2}",
+          "name": "search"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "search",
+    "arguments": {
+      "query": "DeepSeek API 怎么调用",
+      "max_results": 2
+    },
+    "result": {
+      "query": "DeepSeek API 怎么调用",
+      "answer": "To call DeepSeek API, apply for an API key, set the base URL, and use it with compatible SDKs or software. Example: `curl https://api.deepseek.com/chat/completions -H \"Content-Type: application/json\" -d '{\"role\": \"system\", \"content\": \"You are a helpful assistant.\"}'`.",
+      "results": [
+        {
+          "title": "DeepSeek-R1 API 怎么调用？一文讲述 - 知乎专栏",
+          "url": "https://zhuanlan.zhihu.com/p/21375525321",
+          "content": "在本教程中，我将指导您如何获取DeepSeek API 密钥，并演示如何使用该密钥进行API 调试。 最新，更简单的调用方法，直接克隆项目填入API Key 即可。"
+        },
+        {
+          "title": "首次调用API",
+          "url": "https://api-docs.deepseek.com/zh-cn",
+          "content": "# 首次调用 API. DeepSeek API 使用与 OpenAI/Anthropic 兼容的 API 格式，通过修改配置，您可以使用 OpenAI/Anthropic SDK 来访问 DeepSeek API，或使用与 OpenAI/Anthropic API 兼容的软件。. | base\\_url (OpenAI) | `https://api.deepseek.com` |. | base\\_url (Anthropic) | `https://api.deepseek.com/anthropic` |. | api\\_key | apply for an API key |. | model\\* | `deepseek-v4-flash` `deepseek-v4-pro` `deepseek-chat` (将于 2026/07/24 弃用) `deepseek-reasoner` (将于 2026/07/24 弃用) |. `https://api.deepseek.com/anthropic`. \\* deepseek-chat 与 deepseek-reasoner 两个模型名将于北京时间 2026/07/24 23:59 弃用。出于兼容考虑，二者分别对应 deepseek-v4-flash 的非思考与思考模式。. ## 接入 Agent 工具​. DeepSeek API 已接入多种主流 AI Agent 与编程助手工具。如果你使用 Claude Code、GitHub Copilot、OpenCode 等工具，可以直接将 DeepSeek 作为后端模型，无需编写代码即可开始使用。. ## 调用对话 API​. 在创建 API key 之后，你可以使用以下样例脚本，通过 OpenAI API 格式来访问 DeepSeek 模型。样例为非流式输出，您可以将 stream 设置为 true 来使用流式输出。. Anthropic API 格式的访问样例，请参考Anthropic API。. `curl https://api.deepseek.com/chat/completions \\. -H \"Content-Type: application/json\" \\. {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},. `# Please install OpenAI SDK first: `pip3 install openai`. api_key=os.environ.get('DEEPSEEK_API_KEY'),. base_url=\"https://api.deepseek.com\"). response = client.chat.completions.create(. print(response.choices[0].message.content)`. const completion = await openai.chat.completions.create({. messages: [{ role: \"system\", content: \"You are a helpful assistant.\" }],. console.log(completion.choices[0].message.content);."
+        }
+      ]
+    },
+    "tool_call_id": "call_00_FQthain4wyEtDNNIJnW71678",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T13:29:54.553936+00:00",
+  "test_name": "test_deepseek_calls_and_executes_calculator_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 calculator 工具计算 (12 + 8) * 3，参数 expression 必须是这个表达式。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "calculator",
+          "description": "Calculate a simple arithmetic expression using numbers, operators, and parentheses.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Arithmetic expression, for example: (12 + 8) * 3."
+              }
+            },
+            "required": [
+              "expression"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "好的，我现在来调用 calculator 工具计算 (12 + 8) * 3。",
+    "reasoning_content": "用户要求调用 calculator 工具计算 (12 + 8) * 3，参数 expression 必须是这个表达式。我来调用工具。",
+    "tool_calls": [
+      {
+        "id": "call_00_NobvMaOZMBDEftH3V6hs7993",
+        "function": {
+          "arguments": "{\"expression\": \"(12 + 8) * 3\"}",
+          "name": "calculator"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "calculator",
+    "arguments": {
+      "expression": "(12 + 8) * 3"
+    },
+    "result": {
+      "expression": "(12 + 8) * 3",
+      "result": 60
+    },
+    "tool_call_id": "call_00_NobvMaOZMBDEftH3V6hs7993",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T13:29:56.273918+00:00",
+  "test_name": "test_deepseek_calls_and_executes_todo_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 manage_todo_list 工具提交完整任务列表。参数必须为 todoList=[{\"id\":1,\"title\":\"调研最小 Agent runtime\",\"status\":\"in-progress\"}]。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "manage_todo_list",
+          "description": "Manage the complete session todo list for planning and progress tracking. Call this tool whenever the user asks to create a task list or gives complex multi-step work. You must also call it immediately whenever any task status changes: before starting a task, submit the full list with exactly that task marked in-progress; after finishing a task, submit the full list again with that task marked completed before giving the final answer or moving on. Always pass the complete todoList, including all existing and new items; never send only the changed item. Do not call this for single trivial tasks or pure conversation. Todo states: not-started, in-progress (at most one item), completed.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "todoList": {
+                "type": "array",
+                "description": "Complete array of all session todo items after this update. Must include ALL items - both existing and new - every time a task is created, started, or completed. Status updates must be committed through this full-list snapshot before the final user-facing answer.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number",
+                      "description": "Unique identifier for the todo. Use sequential numbers starting from 1."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Concise action-oriented todo label."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "not-started",
+                        "in-progress",
+                        "completed"
+                      ],
+                      "description": "not-started: not begun | in-progress: currently working (max 1) | completed: fully finished and already reflected in the submitted full todoList"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "status"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "todoList"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "",
+    "reasoning_content": "The user wants me to call the manage_todo_list tool with a specific parameter. Let me do that.",
+    "tool_calls": [
+      {
+        "id": "call_00_yrHnviVTSA3D5IRMxcM56950",
+        "function": {
+          "arguments": "{\"todoList\": [{\"id\":1,\"title\":\"调研最小 Agent runtime\",\"status\":\"in-progress\"}]}",
+          "name": "manage_todo_list"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "manage_todo_list",
+    "arguments": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ]
+    },
+    "result": {
+      "todoList": [
+        {
+          "id": 1,
+          "title": "调研最小 Agent runtime",
+          "status": "in-progress"
+        }
+      ],
+      "summary": {
+        "total": 1,
+        "not_started": 0,
+        "in_progress": 1,
+        "completed": 0
+      }
+    },
+    "tool_call_id": "call_00_yrHnviVTSA3D5IRMxcM56950",
+    "type": "function"
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T13:29:59.975879+00:00",
+  "test_name": "test_deepseek_calls_and_executes_search_tool",
+  "request": {
+    "model": "deepseek-v4-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are testing native tool calls. Call the provided tool. Do not answer directly before calling the tool."
+      },
+      {
+        "role": "user",
+        "content": "请调用 search 工具搜索 \"DeepSeek API 怎么调用\"，max_results 设置为 2。"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "search",
+          "description": "Search the web with Tavily and return titles, URLs, and summaries. Use this tool when the user explicitly asks to search/look up/check online, when the question depends on current or time-sensitive information, or when your own knowledge is insufficient to answer reliably. Do not use search for stable general knowledge, simple calculations, pure conversation, or questions that can be answered confidently from existing context.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Focused search query keywords. Include dates, names, products, locations, or other concrete constraints when recency or precision matters."
+              },
+              "max_results": {
+                "type": "integer",
+                "description": "Number of results to return, from 1 to 5. Use 3 by default unless the user needs broader coverage.",
+                "minimum": 1,
+                "maximum": 5
+              }
+            },
+            "required": [
+              "query"
+            ]
+          }
+        }
+      }
+    ],
+    "max_tokens": 65536,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    }
+  },
+  "llm_response": {
+    "role": "assistant",
+    "content": "好的，我来调用 search 工具进行搜索。",
+    "reasoning_content": "用户想让我调用search工具，搜索\"DeepSeek API 怎么调用\"，并将max_results设置为2。我来执行这个工具调用。",
+    "tool_calls": [
+      {
+        "id": "call_00_SqCRTek0ejkCaxc1r38F2948",
+        "function": {
+          "arguments": "{\"query\": \"DeepSeek API 怎么调用\", \"max_results\": 2}",
+          "name": "search"
+        },
+        "type": "function",
+        "index": 0
+      }
+    ]
+  },
+  "tool_execution": {
+    "tool": "search",
+    "arguments": {
+      "query": "DeepSeek API 怎么调用",
+      "max_results": 2
+    },
+    "result": {
+      "query": "DeepSeek API 怎么调用",
+      "answer": "To call DeepSeek API, register for an API key on the DeepSeek platform, then use it in Apifox with Authorization set to Bearer {API_KEY}.",
+      "results": [
+        {
+          "title": "Deepseek API 调用教程，图文讲解",
+          "url": "https://apifox.com/apiskills/deepseek-api-debugging",
+          "content": "# Deepseek API 调用教程，图文讲解. 登录 Deepseek 开放平台后，注册用户可免费获赠 10 元 tokens，并创建 API Key 保存至安全位置。通过 Apifox 集成 Deepseek API，可快速完成 API 调试。配置环境变量后，将 Deepseek 提供的 cURL 导入 Apifox，并设置 Authorization 为 Bearer {{API\\_KEY}}。随后，切换至正式环境发送请求，根据需要修改参数即可实现对话，支持流式或整体输出，提升开发效率。. ### Deepseek API 调用教程，图文讲解. 在本教程中，我将指导您如何获取 DeepSeek API 密钥，并演示如何使用该密钥调用 DeepSeek API 以进行调试。. ## 登录 Deepseek 开放平台. 首先登录 Deepseek 开放平台，获取 `api_key`，首次注册登录的用户， Deepseek 会赠送 10 块钱的 tokens 额度（先看看有没有，也有可能不送了，导致你的 `API_KEY` 不能用，没有额度的话得先充钱）。. ## 创建并复制 API key. 在 Deepseek 开放平台的左侧边栏找到 API Keys，点击它并在此创建一个 API Key，创建完成之后，将这个 API Key 复制下来，并保存在一个只有你知道的地方。. ## 调用 Deepseek API. 当 API Key 有了之后，我们就可以调用它了，Deepseek 的官方 API 文档在这里：。. 下文我们通过 Apifox 来调试 API，并将 AI 模型给我们返回的消息进行流式输出。. 如果你还没有用过 Apifox，强烈推荐去使用，它是一个集成了 API 文档、API 调试、API 设计、API 测试、API Mock、自动化测试的 API 一体化协作平台。. ### 设置 API Key. 登录 Apifox 并在里面新建一个 HTTP 项目后，在项目右上角的 “环境管理” 中，点击“正式环境”，在服务前置 URL 那里填写 `https://api.deepseek.com`，然后添加一个环境变量，可以将其命名为 `API_KEY`，这个环境变量的值就是上面创建的 Deepseek API 的 API Key，添加完成后保存即可。. API Key 设置完成后，在项目里新建一个接口，然后将 Deepseek API 文档里的对话 API 的 curl 复制下来。. `curl https://api.deepseek.com/chat/completions \\. 在解析出来的接口中，点击 Headers，然后更改 Authorization 的参数值，将其更改为 `Bearer {{API_KEY}}`，这样在发送请求的时候才会携带存储在环境变量中的 `API_KEY`。. 登录 Deepseek 开放平台后，注册用户可免费获赠 10 元 tokens，并创建 API Key 保存至安全位置。通过 Apifox 集成 Deepseek API，可快速完成 API 调试。配置环境变量后，将 Deepseek 提供的 cURL 导入 Apifox，并设置 Authorization 为 `Bearer {{API_KEY}}`。随后，切换至正式环境发送请求，根据需要修改参数即可实现对话，支持流式或整体输出，提升开发效率。."
+        },
+        {
+          "title": "如何调用DeepSeek-V3 API ？图文详细教程",
+          "url": "https://deepseek.csdn.net/67ab1fa079aaf67875cb9e1e.html",
+          "content": "# logo DeepSeek技术社区. ### DeepSeek技术社区. # 如何调用 DeepSeek-V3 API ？图文详细教程. **原文链接：****DeepSeek API 调用教程，图文讲解**. 在本教程中，我将指导您如何获取 DeepSeek API 密钥，并演示如何使用该密钥进行 API 调试，以此来调用 DeepSeek-V3 API。. ### 登录 DeepSeek 开放平台. 首先，访问 DeepSeek 开放平台并登录（目前平台可能因高流量而暂时维护）。登录后，您将获得一个 `api_key`，而首次注册的用户还会收到一些免费的 tokens 额度（一般是 10 元）。. ### 创建并复制 API Key. 在 DeepSeek 开放平台左侧边栏中，找到 **API Keys** 选项，点击进入后创建一个新的 API Key。创建完成后，请将 API Key 复制并保存在一个安全且易于访问的地方。. 请妥善保管您的 API Key。出于安全考虑，您将无法通过平台界面再次查看该密钥。如果密钥丢失，您将需要重新生成一个新的。. ### 调用 DeepSeek API. 获得 API Key 后，您可以开始调用 DeepSeek API。官方 API 文档可参考：DeepSeek API 文档。. 通过指定 `model='deepseek-chat'` 即可调用 **DeepSeek-V3**。. 通过指定 `model='deepseek-reasoner'`，即可调用 **DeepSeek-R1**。. 如果你还没有用过 Apifox，强烈推荐去使用，它是一个集成了 API 文档、API 调试、API 设计、API 测试、API Mock、自动化测试的 API 一体化协作平台。. #### 设置 API Key. 登录 Apifox 并在里面新建一个 HTTP 项目后，在项目右上角的 “环境管理” 中，点击“正式环境”，在服务前置 URL 那里填写 `https://api.deepseek.com`，然后添加一个环境变量，可以将其命名为 `API_KEY`，这个环境变量的值就是上面创建的 DeepSeek API 的 API Key，添加完成后保存即可。. API Key 设置完成后，在项目里新建一个接口，然后将 DeepSeek API 文档里的对话 API 的 curl 复制下来。. 回到 Apifox，将这个 cURL 直接按 \"Ctrl + V\" 粘贴到接口路径那里即可，Apifox 会自动解析这里的 cURL。. 在解析出来的接口中，点击 Headers，然后更改 Authorization 的参数值，将其更改为 `Bearer { {API_KEY}}`，这样在发送请求的时候才会携带存储在环境变量中的 `API_KEY`。. 登录 DeepSeek 开放平台后，注册用户可免费获赠 10 元 tokens，并创建 API Key 保存至安全位置。通过 Apifox 集成 DeepSeek API，可快速完成 API 调试。配置环境变量后，将 DeepSeek 提供的 cURL 导入 Apifox，并设置 Authorization 为 `Bearer { {API_KEY}}`。随后，切换至正式环境发送请求，根据需要修改参数即可实现对话，支持流式或整体输出，提升开发效率。. 知识库权限下放至段落级：DeepSeek RAG 增量索引与 ACL 同步的工程实践."
+        }
+      ]
+    },
+    "tool_call_id": "call_00_SqCRTek0ejkCaxc1r38F2948",
+    "type": "function"
+  }
+}

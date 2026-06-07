@@ -14,7 +14,7 @@ def main() -> None:
     parser.add_argument(
         "--session",
         default="",
-        help="Session id to read/write. Leave empty to create a timestamp+uuid session.",
+        help="Session id to read/write. Leave empty to create a UUID session.",
     )
     parser.add_argument(
         "--debug",

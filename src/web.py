@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.agent.memory import SessionMemoryStore
+from src.agent.memory import DEFAULT_SESSION_NAME, SessionMemoryStore
 from src.agent.runtime import AgentRuntime, resolve_session_id
 from src.agent.trace import TraceLogger
 
@@ -40,7 +40,7 @@ def main() -> None:
     session = runtime.memory_store.load(selected_session)
 
     st.title("Minimal Agent")
-    st.caption(f"session: `{selected_session}`")
+    st.caption(f"session_id: `{selected_session}`")
 
     conversation_tab, trace_tab, req_res_tab = st.tabs(["对话", "工具 Trace", "Req/Res"])
     with conversation_tab:
@@ -58,10 +58,14 @@ def main() -> None:
 
 
 def list_session_ids(session_dir: Path = SESSION_DIR) -> list[str]:
+    return [session["session_id"] for session in list_session_summaries(session_dir)]
+
+
+def list_session_summaries(session_dir: Path = SESSION_DIR) -> list[dict[str, str]]:
     if not session_dir.exists():
         return []
     session_paths = list(session_dir.glob("*.json"))
-    return [path.stem for path in sorted(session_paths, key=_session_sort_key)]
+    return [_read_session_summary(path) for path in sorted(session_paths, key=_session_sort_key, reverse=True)]
 
 
 def _session_sort_key(path: Path) -> tuple[float, str]:
@@ -96,6 +100,46 @@ def _read_session_created_at(path: Path) -> datetime | None:
     return parsed
 
 
+def _read_session_summary(path: Path) -> dict[str, str]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        data = {}
+    if not isinstance(data, dict):
+        data = {}
+
+    metadata = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
+    session_name = data.get("session_name") or metadata.get("session_name") or data.get("session_id") or path.stem
+    if not isinstance(session_name, str) or not session_name.strip():
+        session_name = DEFAULT_SESSION_NAME
+
+    return {
+        "session_id": path.stem,
+        "session_name": session_name.strip(),
+    }
+
+
+def format_session_label(summary: dict[str, str]) -> str:
+    return summary.get("session_name") or DEFAULT_SESSION_NAME
+
+
+def build_session_labels(summaries: list[dict[str, str]]) -> dict[str, str]:
+    name_counts: dict[str, int] = {}
+    for summary in summaries:
+        name = summary.get("session_name") or DEFAULT_SESSION_NAME
+        name_counts[name] = name_counts.get(name, 0) + 1
+
+    labels: dict[str, str] = {}
+    for summary in summaries:
+        session_id = summary.get("session_id", "")
+        name = summary.get("session_name") or DEFAULT_SESSION_NAME
+        if name_counts.get(name, 0) > 1:
+            labels[session_id] = f"{name} · {session_id[:8]}"
+        else:
+            labels[session_id] = name
+    return labels
+
+
 def choose_initial_session(query_session: str | None, sessions: list[str]) -> str:
     if query_session and query_session in sessions:
         return query_session
@@ -123,6 +167,45 @@ def delete_session_artifacts(
             path.unlink()
             deleted.append(path)
     return deleted
+
+
+def create_session(runtime: AgentRuntime, session_name: str | None = None) -> str:
+    if not (isinstance(session_name, str) and session_name.strip()):
+        existing_session_id = find_default_untitled_session(runtime.memory_store)
+        if existing_session_id:
+            return existing_session_id
+    session = runtime.memory_store.create(session_name=session_name)
+    return session["session_id"]
+
+
+def find_default_untitled_session(memory_store: SessionMemoryStore) -> str | None:
+    finder = getattr(memory_store, "find_default_untitled_session", None)
+    if callable(finder):
+        return finder()
+
+    candidates: list[tuple[str, str]] = []
+    root_dir = Path(getattr(memory_store, "root_dir", SESSION_DIR))
+    if not root_dir.exists():
+        return None
+
+    for path in root_dir.glob("*.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(data, dict):
+            continue
+
+        metadata = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
+        session_name = data.get("session_name") or metadata.get("session_name")
+        source = metadata.get("session_name_source")
+        if session_name == DEFAULT_SESSION_NAME and source in {"default", "generated"}:
+            created_at = str(metadata.get("created_at", ""))
+            candidates.append((created_at, path.stem))
+
+    if not candidates:
+        return None
+    return sorted(candidates, reverse=True)[0][1]
 
 
 def delete_confirm_key(session_id: str) -> str:
@@ -184,8 +267,18 @@ def _get_runtime() -> AgentRuntime:
 
 def _init_state(st) -> None:
     if "session_id" not in st.session_state:
+        runtime = _get_runtime()
         sessions = list_session_ids()
-        st.session_state.session_id = choose_initial_session(_get_query_session(st), sessions)
+        query_session = _get_query_session(st)
+        if query_session and query_session in sessions:
+            session_id = query_session
+        elif sessions:
+            session_id = sessions[0]
+        elif query_session:
+            session_id = query_session
+        else:
+            session_id = create_session(runtime, "")
+        st.session_state.session_id = session_id
         _set_query_session(st, st.session_state.session_id)
 
 
@@ -193,29 +286,28 @@ def _render_sidebar(st, runtime: AgentRuntime):
     st.sidebar.header("Session")
     current = st.session_state.session_id
     ensure_session_exists(runtime, current)
-    sessions = list_session_ids()
+    session_summaries = list_session_summaries()
+    sessions = [session["session_id"] for session in session_summaries]
+    labels = build_session_labels(session_summaries)
     if sessions:
         selected = st.sidebar.selectbox(
-            "打开会话",
+            "切换会话",
             sessions,
             index=sessions.index(current) if current in sessions else len(sessions) - 1,
+            format_func=lambda session_id: labels.get(session_id, session_id),
         )
         if selected != current:
             st.session_state.session_id = selected
             _set_query_session(st, selected)
             st.rerun()
 
-    manual_session = st.sidebar.text_input("session_id", value=st.session_state.session_id)
-    col_open, col_new = st.sidebar.columns(2)
-    if col_open.button("打开", use_container_width=True):
-        session_id = resolve_session_id(manual_session)
-        ensure_session_exists(runtime, session_id)
-        st.session_state.session_id = session_id
-        _set_query_session(st, session_id)
-        st.rerun()
-    if col_new.button("新建", use_container_width=True):
-        session_id = resolve_session_id("")
-        ensure_session_exists(runtime, session_id)
+    manual_session_name = st.sidebar.text_input(
+        "新会话名称 / Session ID",
+        value="",
+        placeholder="输入 session 名称，可留空",
+    )
+    if st.sidebar.button("新建", use_container_width=True):
+        session_id = create_session(runtime, manual_session_name)
         st.session_state.session_id = session_id
         _set_query_session(st, session_id)
         st.rerun()
@@ -232,7 +324,7 @@ def _render_sidebar(st, runtime: AgentRuntime):
         ):
             delete_session_artifacts(session_id)
             remaining_sessions = list_session_ids()
-            next_session = remaining_sessions[0] if remaining_sessions else resolve_session_id("")
+            next_session = remaining_sessions[0] if remaining_sessions else create_session(runtime, "")
             ensure_session_exists(runtime, next_session)
             st.session_state.session_id = next_session
             _set_query_session(st, next_session)
@@ -466,6 +558,8 @@ def _run_web_turn(st, runtime: AgentRuntime, session_id: str, user_input: str, l
             elif event_type == "task_list":
                 with task_placeholder.container():
                     _render_task_panel(st, runtime.memory_store.get_todo_list(session_id))
+            elif event_type == "session_title":
+                pass
             elif event_type == "message":
                 close_assistant_block()
 

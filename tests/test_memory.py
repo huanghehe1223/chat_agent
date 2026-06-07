@@ -1,9 +1,20 @@
 import json
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 
-from src.agent.memory import MemoryError, SessionMemoryStore, build_llm_context
+from src.agent.memory import (
+    DEFAULT_SESSION_NAME,
+    SESSION_NAME_SOURCE_DEFAULT,
+    SESSION_NAME_SOURCE_GENERATED,
+    SESSION_NAME_SOURCE_USER,
+    MemoryError,
+    SessionMemoryStore,
+    build_llm_context,
+    first_user_prompt,
+    should_generate_session_title,
+)
 from src.agent.schemas import AssistantMessage
 
 
@@ -26,6 +37,100 @@ def test_session_store_supports_chinese_session_id(tmp_path: Path):
 
     assert session["session_id"] == "测试会话"
     assert (tmp_path / "测试会话.json").exists()
+
+
+def test_session_store_creates_uuid_session_with_display_name(tmp_path: Path):
+    store = SessionMemoryStore(tmp_path)
+
+    session = store.create("test-agent-1")
+
+    assert session["session_name"] == "test-agent-1"
+    assert str(UUID(session["session_id"])) == session["session_id"]
+    assert session["session_id"] != "test-agent-1"
+    assert session["metadata"]["session_name_source"] == SESSION_NAME_SOURCE_USER
+    assert (tmp_path / f"{session['session_id']}.json").exists()
+    assert not (tmp_path / "test-agent-1.json").exists()
+
+
+def test_session_store_defaults_new_session_name(tmp_path: Path):
+    store = SessionMemoryStore(tmp_path)
+
+    session = store.create("")
+
+    assert session["session_name"] == DEFAULT_SESSION_NAME
+    assert session["metadata"]["session_name_source"] == SESSION_NAME_SOURCE_DEFAULT
+
+
+def test_user_can_explicitly_name_session_new_chat(tmp_path: Path):
+    store = SessionMemoryStore(tmp_path)
+
+    session = store.create(DEFAULT_SESSION_NAME)
+
+    assert session["session_name"] == DEFAULT_SESSION_NAME
+    assert session["metadata"]["session_name_source"] == SESSION_NAME_SOURCE_USER
+    assert not should_generate_session_title(session)
+
+
+def test_session_title_generation_state_uses_first_user_prompt(tmp_path: Path):
+    store = SessionMemoryStore(tmp_path)
+    session = store.create("")
+
+    session = store.append_user_message(session["session_id"], "帮我规划一次RAG调研")
+    session = store.append_assistant_message(
+        session["session_id"],
+        {"role": "assistant", "content": "好的"},
+    )
+
+    assert should_generate_session_title(session)
+    assert first_user_prompt(session) == "帮我规划一次RAG调研"
+
+
+def test_session_name_update_marks_generated_source(tmp_path: Path):
+    store = SessionMemoryStore(tmp_path)
+    session = store.create("")
+
+    updated = store.update_session_name(session["session_id"], "RAG调研")
+
+    assert updated["session_name"] == "RAG调研"
+    assert updated["metadata"]["session_name_source"] == SESSION_NAME_SOURCE_GENERATED
+    assert "title_generated_at" in updated["metadata"]
+
+
+def test_find_default_untitled_session_reuses_unrenamed_default_sessions(tmp_path: Path):
+    store = SessionMemoryStore(tmp_path)
+    untitled = store.create("")
+    named = store.create("New Chat")
+    store.append_user_message(untitled["session_id"], "hello")
+
+    assert store.find_default_untitled_session() == untitled["session_id"]
+    assert named["session_id"] != untitled["session_id"]
+
+
+def test_generated_new_chat_is_treated_as_default_untitled(tmp_path: Path):
+    session_id = "cbd0edea-6dd8-43e9-9f6b-237e0bd3bb2b"
+    (tmp_path / f"{session_id}.json").write_text(
+        json.dumps(
+            {
+                "session_id": session_id,
+                "session_name": "New Chat",
+                "messages": [{"role": "user", "content": "早上好啊"}],
+                "memory": {"tasks": {}, "facts": {}, "preferences": {}},
+                "metadata": {
+                    "session_name_source": "generated",
+                    "title_generated_at": "2026-06-07T13:07:45+00:00",
+                },
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    store = SessionMemoryStore(tmp_path)
+
+    session = store.load(session_id)
+
+    assert session["metadata"]["session_name_source"] == SESSION_NAME_SOURCE_DEFAULT
+    assert "title_generated_at" not in session["metadata"]
+    assert should_generate_session_title(session)
 
 
 def test_assistant_message_keeps_reasoning_locally_but_filters_llm_context(tmp_path: Path):

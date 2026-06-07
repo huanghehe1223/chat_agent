@@ -1,19 +1,53 @@
 from pathlib import Path
 import json
-import re
+import time
 from typing import Any
+from uuid import UUID
 
 from src.agent.config import AgentConfig
 from src.agent.memory import SessionMemoryStore
-from src.agent.runtime import AgentRuntime
+from src.agent.runtime import AgentRuntime, _clean_session_title
 from src.agent.trace import TraceLogger
 from src.tools.registry import build_default_registry
 
 
 class FakeStreamingLLM:
-    def __init__(self, event_batches: list[list[dict[str, Any]]]) -> None:
+    def __init__(
+        self,
+        event_batches: list[list[dict[str, Any]]],
+        chat_responses: list[dict[str, Any]] | None = None,
+        chat_delay: float = 0.0,
+    ) -> None:
         self.event_batches = event_batches
+        self.chat_responses = chat_responses or []
+        self.chat_delay = chat_delay
         self.calls: list[dict[str, Any]] = []
+        self.chat_calls: list[dict[str, Any]] = []
+
+    def chat(
+        self,
+        messages,
+        tools=None,
+        tool_choice=None,
+        temperature=None,
+        max_tokens=None,
+        extra_body=None,
+    ):
+        self.chat_calls.append(
+            {
+                "messages": messages,
+                "tools": tools,
+                "tool_choice": tool_choice,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "extra_body": extra_body,
+            }
+        )
+        if self.chat_delay:
+            time.sleep(self.chat_delay)
+        if not self.chat_responses:
+            raise AssertionError("unexpected chat call")
+        return self.chat_responses.pop(0)
 
     def stream_chat_events(
         self,
@@ -48,6 +82,16 @@ def make_runtime(tmp_path: Path, fake_llm: FakeStreamingLLM, max_steps: int = 5)
         trace_logger=TraceLogger(tmp_path / "traces"),
         system_prompt="You are a test agent.",
     )
+
+
+def wait_until(condition, timeout: float = 2.0):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        value = condition()
+        if value:
+            return value
+        time.sleep(0.02)
+    raise AssertionError("condition was not met before timeout")
 
 
 def test_runtime_supports_multi_turn_context_without_reasoning_content(tmp_path: Path):
@@ -308,7 +352,7 @@ def test_runtime_injects_shanghai_runtime_context_and_writes_req_res_log(tmp_pat
     assert payload["response"]["_stream_chunks"] == [{"choices": [{"delta": {"content": "OK"}}]}]
 
 
-def test_runtime_blank_session_id_generates_timestamp_uuid_session(tmp_path: Path):
+def test_runtime_blank_session_id_generates_uuid_session(tmp_path: Path):
     fake_llm = FakeStreamingLLM(
         [
             [
@@ -326,9 +370,194 @@ def test_runtime_blank_session_id_generates_timestamp_uuid_session(tmp_path: Pat
 
     result = runtime.run_turn("ping", session_id="")
 
-    assert re.fullmatch(r"\d{8}-\d{6}-[0-9a-f]{8}", result.session_id)
+    assert str(UUID(result.session_id)) == result.session_id
     assert (tmp_path / "sessions" / f"{result.session_id}.json").exists()
     assert (tmp_path / "sessions" / f"{result.session_id}.req_res.log").exists()
+
+
+def test_runtime_generates_title_from_first_prompt_for_default_new_session(tmp_path: Path):
+    fake_llm = FakeStreamingLLM(
+        [
+            [
+                {
+                    "type": "message",
+                    "message": {
+                        "role": "assistant",
+                        "content": "OK",
+                    },
+                }
+            ]
+        ],
+        chat_responses=[{"role": "assistant", "content": "RAG调研"}],
+    )
+    runtime = make_runtime(tmp_path, fake_llm)
+    session = runtime.memory_store.create("")
+
+    runtime.run_turn("帮我规划一次RAG调研", session_id=session["session_id"])
+
+    updated = wait_until(
+        lambda: (
+            loaded
+            if (loaded := runtime.memory_store.load(session["session_id"]))["metadata"]["session_name_source"] == "generated"
+            else None
+        )
+    )
+    assert updated["session_name"] == "RAG调研"
+    assert updated["metadata"]["session_name_source"] == "generated"
+    assert fake_llm.chat_calls[0]["tools"] is None
+    assert fake_llm.chat_calls[0]["max_tokens"] == AgentRuntime.TITLE_MAX_TOKENS
+    assert "帮我规划一次RAG调研" in fake_llm.chat_calls[0]["messages"][1]["content"]
+
+
+def test_runtime_does_not_wait_for_session_title_generation(tmp_path: Path):
+    fake_llm = FakeStreamingLLM(
+        [
+            [
+                {
+                    "type": "message",
+                    "message": {
+                        "role": "assistant",
+                        "content": "主回复",
+                    },
+                }
+            ]
+        ],
+        chat_responses=[{"role": "assistant", "content": "慢标题"}],
+        chat_delay=0.5,
+    )
+    runtime = make_runtime(tmp_path, fake_llm)
+    session = runtime.memory_store.create("")
+
+    started = time.monotonic()
+    result = runtime.run_turn("早上好啊", session_id=session["session_id"])
+    elapsed = time.monotonic() - started
+
+    assert result.answer == "主回复"
+    assert elapsed < 0.4
+    wait_until(
+        lambda: runtime.memory_store.load(session["session_id"])["metadata"]["session_name_source"] == "generated"
+    )
+
+
+def test_runtime_does_not_rename_user_named_new_chat(tmp_path: Path):
+    fake_llm = FakeStreamingLLM(
+        [
+            [
+                {
+                    "type": "message",
+                    "message": {
+                        "role": "assistant",
+                        "content": "OK",
+                    },
+                }
+            ]
+        ]
+    )
+    runtime = make_runtime(tmp_path, fake_llm)
+    session = runtime.memory_store.create("New Chat")
+
+    runtime.run_turn("hello", session_id=session["session_id"])
+
+    updated = runtime.memory_store.load(session["session_id"])
+    assert updated["session_name"] == "New Chat"
+    assert updated["metadata"]["session_name_source"] == "user"
+    assert fake_llm.chat_calls == []
+
+
+def test_runtime_does_not_mark_default_title_as_generated(tmp_path: Path):
+    fake_llm = FakeStreamingLLM(
+        [
+            [
+                {
+                    "type": "message",
+                    "message": {
+                        "role": "assistant",
+                        "content": "OK",
+                    },
+                }
+            ]
+        ],
+        chat_responses=[{"role": "assistant", "content": "New Chat"}],
+    )
+    runtime = make_runtime(tmp_path, fake_llm)
+    session = runtime.memory_store.create("")
+
+    runtime.run_turn("早上好啊", session_id=session["session_id"])
+
+    updated = wait_until(
+        lambda: (
+            loaded
+            if (loaded := runtime.memory_store.load(session["session_id"]))["metadata"].get("title_generation_error")
+            else None
+        )
+    )
+    assert updated["session_name"] == "New Chat"
+    assert updated["metadata"]["session_name_source"] == "default"
+    assert "title_generated_at" not in updated["metadata"]
+    assert updated["metadata"]["title_generation_error"] == "generated title was empty or default"
+
+
+def test_runtime_retries_title_generation_after_previous_failure(tmp_path: Path):
+    fake_llm = FakeStreamingLLM(
+        [
+            [
+                {
+                    "type": "message",
+                    "message": {
+                        "role": "assistant",
+                        "content": "第一轮回复",
+                    },
+                }
+            ],
+            [
+                {
+                    "type": "message",
+                    "message": {
+                        "role": "assistant",
+                        "content": "第二轮回复",
+                    },
+                }
+            ],
+        ],
+        chat_responses=[
+            {"role": "assistant", "content": "New Chat"},
+            {"role": "assistant", "content": "早安问候"},
+        ],
+    )
+    runtime = make_runtime(tmp_path, fake_llm)
+    session = runtime.memory_store.create("")
+
+    runtime.run_turn("早上好啊", session_id=session["session_id"])
+    failed = wait_until(
+        lambda: (
+            loaded
+            if (loaded := runtime.memory_store.load(session["session_id"]))["metadata"].get("title_generation_error")
+            else None
+        )
+    )
+    assert failed["session_name"] == "New Chat"
+    assert failed["metadata"]["session_name_source"] == "default"
+
+    runtime.run_turn("你知道中国吗", session_id=session["session_id"])
+    retried = wait_until(
+        lambda: (
+            loaded
+            if (loaded := runtime.memory_store.load(session["session_id"]))["metadata"]["session_name_source"] == "generated"
+            else None
+        )
+    )
+
+    assert len(fake_llm.chat_calls) == 2
+    assert retried["session_name"] == "早安问候"
+    assert retried["metadata"]["session_name_source"] == "generated"
+
+
+def test_clean_session_title_removes_prefix_and_limits_length():
+    assert _clean_session_title("标题：RAG调研计划") == "RAG调研计划"
+    assert _clean_session_title("one two three four five six seven eight nine ten eleven") == (
+        "one two three four five six seven eight nine ten"
+    )
+    assert _clean_session_title("abcdefghijk") == "abcdefghij"
 
 
 def test_runtime_finalizes_without_tools_after_max_steps_with_tool_result(tmp_path: Path):

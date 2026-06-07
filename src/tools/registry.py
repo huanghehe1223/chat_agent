@@ -113,13 +113,20 @@ def build_default_registry(
     registry.register(
         ToolDefinition(
             name="calculator",
-            description="Calculate a simple arithmetic expression using numbers, operators, and parentheses.",
+            description=(
+                "Calculate a math expression safely. Supports arithmetic operators "
+                "+, -, *, /, //, %, **, parentheses, constants pi/e/tau, and common "
+                "functions such as sqrt, sin, cos, tan, log, log10, abs, min, max, round."
+            ),
             parameters={
                 "type": "object",
                 "properties": {
                     "expression": {
                         "type": "string",
-                        "description": "Arithmetic expression, for example: (12 + 8) * 3.",
+                        "description": (
+                            "Math expression, for example: (12 + 8) * 3, sqrt(144), "
+                            "sin(pi / 2), log(100, 10), or max(2, 8, 5)."
+                        ),
                     }
                 },
                 "required": ["expression"],
