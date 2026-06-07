@@ -6,10 +6,10 @@
 
 > **快速导航**
 >
-> **重点阅读：** [AI Prompt 与问题解决记录](#ai-prompt-与问题解决记录)  
-> **效果展示：** [录屏展示](#录屏展示)
+> **重点阅读：** [8. AI Prompt 与问题解决记录](#8-ai-prompt-与问题解决记录)  
+> **效果展示：** [9. 录屏展示](#9-录屏展示)
 
-## 功能概览
+## 1. 功能概览
 
 - 多轮对话：同一个 session 内保留历史消息，后续提问可以基于已有上下文理解指代。
 - Session 维护：每个 session 独立保存到 `data/sessions/{session_id}.json`，支持中文 session 名称。
@@ -22,7 +22,7 @@
 - Trace 与 Req/Res 日志：工具执行日志保存到 `data/traces/`，LLM 请求与响应摘要保存到 `data/sessions/*.req_res.log`。
 - Web 展示：支持多 session 切换、刷新后恢复对话、实时流式输出、reasoning 折叠展示、tool_use/tool_result 展示、任务列表实时更新、日志查看和删除 session。
 
-## 技术实现
+## 2. 技术实现
 
 - 语言：Python
 - LLM：DeepSeek API，OpenAI-compatible Chat Completions
@@ -56,7 +56,7 @@ data/
 tests/                 # 单元测试与集成测试
 ```
 
-## 运行方式
+## 3. 运行方式
 
 建议使用项目开发时的 conda 环境：
 
@@ -106,7 +106,7 @@ streamlit run src/web.py
 http://localhost:8501
 ```
 
-## Agent Loop 设计
+## 4. Agent Loop 设计
 
 核心流程位于 `src/agent/runtime.py` 的 `AgentRuntime.run_turn()`：
 
@@ -123,7 +123,7 @@ http://localhost:8501
 
 达到 `MAX_AGENT_STEPS` 且已经有工具结果时，runtime 会追加内部收束提示，并进行一次不传 `tools` 的最终 LLM 调用，要求模型基于已有工具结果回答，避免无限工具循环。
 
-## Memory 召回时机与放置方式
+## 5. Memory 召回时机与放置方式
 
 项目把聊天流水和结构化 memory 分开建模，物理上保存在同一个 session JSON 文件中：
 
@@ -161,7 +161,7 @@ http://localhost:8501
 
 需要注意：本地 `messages` 不会原样发给模型。`reasoning_content`、本地 `metadata` 等只用于展示和调试，不会进入下一次 LLM 请求上下文；assistant 的正式回答、assistant `tool_calls` 和 `role=tool` 工具结果会按协议保留。
 
-## 工具列表
+## 6. 工具列表
 
 `calculator`
 
@@ -182,7 +182,7 @@ http://localhost:8501
 - 状态：`not-started`、`in-progress`、`completed`，同一时间最多一个任务为 `in-progress`。
 - 示例：第一轮创建 RAG 调研任务列表，第二轮输入 `现在完成第二个任务`，Agent 会基于已有 session 状态继续执行。
 
-## 日志与可观察性
+## 7. 日志与可观察性
 
 Session 文件：
 
@@ -217,7 +217,7 @@ Trace 记录字段包括：
 
 Web 页面中也提供 `工具 Trace` 和 `Req/Res` 两个标签页，用于查看当前 session 的执行细节。
 
-## AI Prompt 与问题解决记录
+## 8. AI Prompt 与问题解决记录
 
 详细记录见 [PROMPTS_AND_NOTES.md](PROMPTS_AND_NOTES.md)。
 
@@ -235,39 +235,39 @@ Web 页面中也提供 `工具 Trace` 和 `Req/Res` 两个标签页，用于查�
 
 原始 AI 对话记录保存在本地 `codex_sessions/` 目录中；提交文档中用 [PROMPTS_AND_NOTES.md](PROMPTS_AND_NOTES.md) 做了结构化整理，重点记录 prompt、问题、修正思路和最终落地结果。
 
-## 录屏展示
+## 9. 录屏展示
 
-### 1. 多轮对话、思考过程展示、流式输出
+### 9.1 多轮对话、思考过程展示、流式输出
 
 视频中先问“你知道中国吗”，再问“它的经济中心在哪里”。页面正常展示 reasoning 和正式回答，并能识别“它”指代中国，说明支持多轮对话。
 
 https://github.com/user-attachments/assets/49875343-2a8f-49e9-813c-dc7fe73b005a
 
-### 2. 同一个 session 对话记录持久化
+### 9.2 同一个 session 对话记录持久化
 
 刷新页面后，对话记录仍然加载出来；在之前对话基础上继续询问“它有多少个民族”，Agent 仍能基于上下文回答。示例数据可查看 [data/sessions/简单测试.json](data/sessions/简单测试.json)，请求响应详情可查看 [data/sessions/简单测试.req_res.log](data/sessions/简单测试.req_res.log)。
 
 https://github.com/user-attachments/assets/80d4e15b-b809-433c-8564-16a803ed8100
 
-### 3. 多 session 管理，各 session 独立
+### 9.3 多 session 管理，各 session 独立
 
 视频中切换不同 session，每个 session 都有自己的对话记录和渲染状态。
 
 https://github.com/user-attachments/assets/28f73a59-a8a3-4476-970a-b347e1adf96d
 
-### 4. 工具调用示例：search
+### 9.4 工具调用示例：search
 
 询问“北京最近天气怎么样”，模型生成 `search` 的 `tool_use`，系统自动执行工具并展示 `tool_result`。
 
 https://github.com/user-attachments/assets/c9a45478-f1fd-4235-b8b8-a57b54afc944
 
-### 5. 工具调用示例：calculator
+### 9.5 工具调用示例：calculator
 
 询问“计算一下 889*(554-3)”，模型生成工具调用，系统执行计算并展示工具调用信息。示例数据可查看 [data/sessions/简单工具调用.json](data/sessions/简单工具调用.json)，请求响应详情可查看 [data/sessions/简单工具调用.req_res.log](data/sessions/简单工具调用.req_res.log)。
 
 https://github.com/user-attachments/assets/dd4ab8db-a268-417c-a0d8-1d423eef1904
 
-### 6. Task List 与跨轮次继续执行
+### 9.6 Task List 与跨轮次继续执行
 
 先输入“创建一个任务列表，先搜索什么是RAG，再搜索有哪些RAG框架，最后搜索最新RAG前沿技术，只完成第一个任务即可”。模型调用 `manage_todo_list` 创建任务列表，并在任务状态变化时继续调用该工具写回完整 task list。刷新后 task 状态仍然保留。
 
@@ -275,13 +275,13 @@ https://github.com/user-attachments/assets/dd4ab8db-a268-417c-a0d8-1d423eef1904
 
 https://github.com/user-attachments/assets/dc918742-fd45-42e6-8a1f-1cfb810f95d4
 
-### 7. 工具调用日志详情
+### 9.7 工具调用日志详情
 
 Web 页面可以查看每个 session 的工具调用日志，包括工具名称、参数和执行结果。
 
 https://github.com/user-attachments/assets/7c791baf-1398-493e-be13-70c73939c444
 
-## 测试
+## 10. 测试
 
 运行测试：
 

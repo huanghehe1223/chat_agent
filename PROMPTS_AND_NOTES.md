@@ -2,7 +2,7 @@
 
 本文用于整理本项目开发过程中的 AI 协作方式、关键 prompt、问题修正记录和测试策略。原始对话记录保存在本地 `codex_sessions/` 目录中，内容较长且包含大量工具输出；本文做提交友好的提炼，重点说明人的设计判断、任务拆解、持续纠偏和最终实现如何落地。
 
-## 协作方式概览
+## 1. 协作方式概览
 
 本项目不是一次性让 AI 生成完整 Agent，而是采用“人工拆解任务 + 模块化实现 + 单元测试验证 + tracking 跨 session 追踪”的方式推进。
 
@@ -16,11 +16,11 @@
 
 这套方式让 AI 更像执行和实现助手：我负责定义边界、提出验收标准、发现不合理设计并纠偏；AI 负责根据当前上下文实现代码、补测试、更新文档。
 
-## 关键 Prompt 片段
+## 2. 关键 Prompt 片段
 
 以下是开发过程中较关键的人工指令，按主题整理。
 
-### 题目边界与自建 runtime
+### 2.1 题目边界与自建 runtime
 
 最开始先确认题目中“核心 runtime 需要自己实现”的含义。我明确要求：
 
@@ -36,7 +36,7 @@
 - 不使用现成 Agent 框架完成主循环、工具调度、memory runtime 或规划执行。
 - `AgentRuntime.run_turn()` 自己实现接收输入、判断工具调用、执行工具、写回工具结果、继续循环和最终回答。
 
-### 任务拆解、测试与 tracking
+### 2.2 任务拆解、测试与 tracking
 
 项目开始时我没有直接让 AI 写完整代码，而是先要求任务拆解：
 
@@ -66,7 +66,7 @@ python实现，.env里面配置api和key
 
 这让开发节奏变成“一个模块一个闭环”，避免到最后才发现集成问题。
 
-### 使用真实 API 与 OpenAI SDK
+### 2.3 使用真实 API 与 OpenAI SDK
 
 在 LLM 封装阶段，我要求真实请求而不是 mock：
 
@@ -85,7 +85,7 @@ python实现，.env里面配置api和key
 - `src/agent/llm.py` 使用 `openai` SDK 调用 DeepSeek OpenAI-compatible API。
 - runtime 和测试都走真实模型能力，尤其验证 thinking、stream 和 tool_calls 行为。
 
-### DeepSeek thinking 与 tool_choice 约束
+### 2.4 DeepSeek thinking 与 tool_choice 约束
 
 开发中 AI 曾为了测试方便关闭 thinking。我指出这不符合项目预期：
 
@@ -107,7 +107,7 @@ DeepSeek 返回了一个很有用的约束：开启 thinking mode 时不支持�
 - 不显式指定某个 `tool_choice`。
 - 测试某个工具时，只传目标工具 schema 来约束模型调用。
 
-### 原生 tool_calls，而不是自定义 JSON
+### 2.5 原生 tool_calls，而不是自定义 JSON
 
 在工具调用协议上，我修正了早期“让模型输出固定 JSON”的倾向：
 
@@ -122,7 +122,7 @@ DeepSeek 返回了一个很有用的约束：开启 thinking mode 时不支持�
 - `ToolRegistry` 根据 `tool_calls[].function.name` 和 `arguments` 执行本地工具。
 - 工具结果以 `role=tool` 写回上下文，继续下一轮 LLM。
 
-### 流式解析从“最终合并”改为“逐 chunk 事件”
+### 2.6 流式解析从“最终合并”改为“逐 chunk 事件”
 
 我发现早期流式实现只是收集完整 chunks 后再合并，不符合真实流式 Agent 行为，于是明确给出正确流程：
 
@@ -148,7 +148,7 @@ tool_call 完整后：触发工具调用
 - 事件类型包括 `reasoning_delta`、`content_delta`、`tool_call_delta`、`tool_call` 和 `message`。
 - CLI/Web 可以实时展示 reasoning、正式回答、tool_use 和 tool_result。
 
-### Memory 与对话历史分离
+### 2.7 Memory 与对话历史分离
 
 我主动提出 memory 设计问题：
 
@@ -164,7 +164,7 @@ tool_call 完整后：触发工具调用
 - `reasoning_content` 和本地 `metadata` 不发送给模型。
 - `memory.tasks` 在每轮 LLM 调用前以摘要形式注入 system prompt。
 
-### todo 工具改为 session 级完整列表同步
+### 2.8 todo 工具改为 session 级完整列表同步
 
 早期 todo 工具采用的是一个 CRUD 式 schema：
 
@@ -203,7 +203,7 @@ session初始化的时候读取一下list记忆进行展示
 
 后续真实使用时，我又发现模型创建任务后可能只在文字里说“第一个任务完成”，但没有再次调用工具写回状态。因此继续通过 system prompt、工具 schema 和 memory 摘要强化协议：创建任务列表时必须调用 `manage_todo_list`；任务开始前要把对应任务标记为 `in-progress` 并提交完整列表；任务完成后、最终回答前要再次提交完整列表，把任务标记为 `completed`。这样任务状态不会停留在自然语言回复里，而会真正进入 session memory，支持下一轮继续执行。
 
-### 最大步数收束策略
+### 2.9 最大步数收束策略
 
 我进一步明确 `MAX_AGENT_STEPS` 不是简单失败退出，而是要能收束：
 
@@ -222,7 +222,7 @@ session初始化的时候读取一下list记忆进行展示
 
 - 收束调用不再传入 `tools`，避免继续工具循环。
 
-### Web 页面体验迭代
+### 2.10 Web 页面体验迭代
 
 Web 不是一次性完成，而是在真实使用中多轮修正：
 
@@ -238,7 +238,7 @@ Web 不是一次性完成，而是在真实使用中多轮修正：
 
 这些迭代体现了项目不是只满足“能跑”，还关注可演示性和录屏效果。
 
-## Runtime Prompt 摘要
+## 3. Runtime Prompt 摘要
 
 当前 runtime 的 system prompt 位于 `src/agent/runtime.py`，核心约束包括：
 
@@ -256,7 +256,7 @@ Web 不是一次性完成，而是在真实使用中多轮修正：
 已达到本轮最大推理步数限制。请不要再调用工具，请根据当前已有的对话历史和工具结果给出最终答案。如果信息不足，请说明当前能确定的内容和缺失的信息。
 ```
 
-## 工具 Schema 摘要
+## 4. 工具 Schema 摘要
 
 工具 schema 由 `src/tools/registry.py` 统一注册并导出。
 
@@ -279,7 +279,7 @@ Web 不是一次性完成，而是在真实使用中多轮修正：
 - 状态：`not-started`、`in-progress`、`completed`
 - 约束：同一时间最多一个任务为 `in-progress`；任何状态变化都提交完整列表。
 
-## 问题解决记录
+## 5. 问题解决记录
 
 | 问题 | 判断与修正 | 最终落地 |
 | --- | --- | --- |
@@ -296,7 +296,7 @@ Web 不是一次性完成，而是在真实使用中多轮修正：
 | Web Req/Res 渲染卡顿 | 默认不读取大 JSON，按需加载原始日志 | 页面流畅优先 |
 | task list 是否只在整轮结束后更新 | 工具调用后立即读持久化文件刷新 | Web 侧 task panel 实时更新 |
 
-## 测试与验证策略
+## 6. 测试与验证策略
 
 测试策略贯穿整个开发过程：
 
@@ -317,7 +317,7 @@ Web 不是一次性完成，而是在真实使用中多轮修正：
 - 修改共享模块或阶段性收尾时才运行全量测试。
 - 测试命令和结果记录到 [TASK_TRACKING.md](TASK_TRACKING.md)，方便后续 session 继续接手。
 
-## 开发结果
+## 7. 开发结果
 
 最终项目完成了笔试要求的核心能力：
 
