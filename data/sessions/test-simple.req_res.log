@@ -1,0 +1,1843 @@
+
+====================================================================================================
+{
+  "time": "2026-06-07T14:08:17.386639+08:00",
+  "session_id": "test-simple",
+  "turn_id": "1ba051921072",
+  "step": 1,
+  "request": {
+    "model": "deepseek-v4-flash",
+    "base_url": "https://api.deepseek.com",
+    "api_key": "sk-***a5dc",
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是一个简洁可靠的本地工具 Agent。需要计算、搜索或管理任务时调用可用工具；工具返回结果后，基于结果给出用户可见的简洁回答。不要把 reasoning_content 当作正式回答输出。\n\n<runtime_context>\nCurrent date: 2026-06-07\nCurrent time: 14:08:14\nTimezone: Asia/Shanghai\nLocale: zh-CN\n</runtime_context>"
+      },
+      {
+        "role": "user",
+        "content": "你知道中国吗"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "calculator",
+          "description": "Calculate a simple arithmetic expression using numbers, operators, and parentheses.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Arithmetic expression, for example: (12 + 8) * 3."
+              }
+            },
+            "required": [
+              "expression"
+            ]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "search",
+          "description": "Search the web with Tavily and return titles, URLs, and summaries.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Search query keywords."
+              },
+              "max_results": {
+                "type": "integer",
+                "description": "Number of results to return, from 1 to 5.",
+                "minimum": 1,
+                "maximum": 5
+              }
+            },
+            "required": [
+              "query"
+            ]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "manage_todo_list",
+          "description": "Manage the complete session todo list for planning and progress tracking. Use this for complex multi-step work, after receiving multiple tasks, before starting a todo, and immediately after completing a todo. Always pass the complete todoList, including all existing and new items. Do not call this for single trivial tasks or pure conversation. Todo states: not-started, in-progress (at most one item), completed.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "todoList": {
+                "type": "array",
+                "description": "Complete array of all todo items. Must include ALL items - both existing and new.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number",
+                      "description": "Unique identifier for the todo. Use sequential numbers starting from 1."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Concise action-oriented todo label."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "not-started",
+                        "in-progress",
+                        "completed"
+                      ],
+                      "description": "not-started: not begun | in-progress: currently working (max 1) | completed: fully finished"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "status"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "todoList"
+            ]
+          }
+        }
+      }
+    ],
+    "tool_choice": null,
+    "max_tokens": 1000,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    },
+    "stream": true
+  },
+  "response": {
+    "role": "assistant",
+    "content": "当然知道。中国是一个位于东亚的国家，拥有悠久的历史和丰富的文化，是世界上人口最多的国家，也是全球重要的经济体之一。首都是北京。",
+    "reasoning_content": "用户问了一个很简单的问题：\"你知道中国吗\"。这是一个常识性问题，不需要调用任何工具。直接回答即可。",
+    "_stream_chunks": [
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "role": "assistant",
+              "reasoning_content": ""
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "用户"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "问"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "了一个"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "很简单"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "的问题"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "：\""
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "你知道"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "中国"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "吗"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "\"。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "这是一个"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "常识"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "性问题"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "，"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "不需要"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "调用"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "任何"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "工具"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "直接"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "回答"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "即可"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "当然"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "知道"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "中国"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "是一个"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "位于"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "东亚"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "的国家"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "，"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "拥有"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "悠久"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "的历史"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "和"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "丰富的"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "文化"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "，"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "是世界上"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "人口"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "最多的"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "国家"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "，"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "也是"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "全球"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "重要的"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "经济体"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "之一"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "首"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "都是"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "北京"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": "。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "efd816c5-3b50-4f7c-9202-233cc3a46f81",
+        "choices": [
+          {
+            "delta": {
+              "content": ""
+            },
+            "finish_reason": "stop",
+            "index": 0
+          }
+        ],
+        "created": 1780812497,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402",
+        "usage": {
+          "completion_tokens": 55,
+          "prompt_tokens": 761,
+          "total_tokens": 816,
+          "completion_tokens_details": {
+            "reasoning_tokens": 23
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 761
+        }
+      }
+    ]
+  }
+}
+
+====================================================================================================
+{
+  "time": "2026-06-07T14:08:21.854422+08:00",
+  "session_id": "test-simple",
+  "turn_id": "f46258a48778",
+  "step": 1,
+  "request": {
+    "model": "deepseek-v4-flash",
+    "base_url": "https://api.deepseek.com",
+    "api_key": "sk-***a5dc",
+    "messages": [
+      {
+        "role": "system",
+        "content": "你是一个简洁可靠的本地工具 Agent。需要计算、搜索或管理任务时调用可用工具；工具返回结果后，基于结果给出用户可见的简洁回答。不要把 reasoning_content 当作正式回答输出。\n\n<runtime_context>\nCurrent date: 2026-06-07\nCurrent time: 14:08:20\nTimezone: Asia/Shanghai\nLocale: zh-CN\n</runtime_context>"
+      },
+      {
+        "role": "user",
+        "content": "你知道中国吗"
+      },
+      {
+        "role": "assistant",
+        "content": "当然知道。中国是一个位于东亚的国家，拥有悠久的历史和丰富的文化，是世界上人口最多的国家，也是全球重要的经济体之一。首都是北京。"
+      },
+      {
+        "role": "user",
+        "content": "它的经济中心在哪里"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "calculator",
+          "description": "Calculate a simple arithmetic expression using numbers, operators, and parentheses.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "expression": {
+                "type": "string",
+                "description": "Arithmetic expression, for example: (12 + 8) * 3."
+              }
+            },
+            "required": [
+              "expression"
+            ]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "search",
+          "description": "Search the web with Tavily and return titles, URLs, and summaries.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Search query keywords."
+              },
+              "max_results": {
+                "type": "integer",
+                "description": "Number of results to return, from 1 to 5.",
+                "minimum": 1,
+                "maximum": 5
+              }
+            },
+            "required": [
+              "query"
+            ]
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "manage_todo_list",
+          "description": "Manage the complete session todo list for planning and progress tracking. Use this for complex multi-step work, after receiving multiple tasks, before starting a todo, and immediately after completing a todo. Always pass the complete todoList, including all existing and new items. Do not call this for single trivial tasks or pure conversation. Todo states: not-started, in-progress (at most one item), completed.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "todoList": {
+                "type": "array",
+                "description": "Complete array of all todo items. Must include ALL items - both existing and new.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number",
+                      "description": "Unique identifier for the todo. Use sequential numbers starting from 1."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Concise action-oriented todo label."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "not-started",
+                        "in-progress",
+                        "completed"
+                      ],
+                      "description": "not-started: not begun | in-progress: currently working (max 1) | completed: fully finished"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "status"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "todoList"
+            ]
+          }
+        }
+      }
+    ],
+    "tool_choice": null,
+    "max_tokens": 1000,
+    "extra_body": {
+      "thinking": {
+        "type": "enabled"
+      }
+    },
+    "stream": true
+  },
+  "response": {
+    "role": "assistant",
+    "content": "中国的经济中心通常指**上海**。上海是中国最大的城市之一，也是全球重要的金融、贸易和航运中心。",
+    "reasoning_content": "用户问的是中国的经济中心，通常指上海。我可以直接回答这个问题，不需要调用工具。",
+    "_stream_chunks": [
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "role": "assistant",
+              "reasoning_content": ""
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "用户"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "问"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "的是"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "中国的"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "经济"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "中心"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "，"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "通常"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "指"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "上海"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "我可以"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "直接"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "回答"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "这个问题"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "，"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "不需要"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "调用"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "工具"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "reasoning_content": "。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "中国的"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "经济"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "中心"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "通常"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "指"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "**"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "上海"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "**"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "上海"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "是中国"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "最大的"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "城市"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "之一"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "，"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "也是"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "全球"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "重要的"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "金融"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "、"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "贸易"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "和"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "航运"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "中心"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": "。"
+            },
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402"
+      },
+      {
+        "id": "247bcf7b-85ee-4387-bd52-64a7bc70364d",
+        "choices": [
+          {
+            "delta": {
+              "content": ""
+            },
+            "finish_reason": "stop",
+            "index": 0
+          }
+        ],
+        "created": 1780812501,
+        "model": "deepseek-v4-flash",
+        "object": "chat.completion.chunk",
+        "system_fingerprint": "fp_8b330d02d0_prod0820_fp8_kvcache_20260402",
+        "usage": {
+          "completion_tokens": 46,
+          "prompt_tokens": 800,
+          "total_tokens": 846,
+          "completion_tokens_details": {
+            "reasoning_tokens": 20
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 800
+        }
+      }
+    ]
+  }
+}

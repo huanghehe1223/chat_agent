@@ -1,0 +1,112 @@
+{
+  "session_id": "cli-smoke",
+  "messages": [
+    {
+      "role": "user",
+      "content": "帮我算一下 (12 + 8) * 3",
+      "metadata": {
+        "created_at": "2026-06-07T03:15:51.001595+00:00",
+        "message_type": "user_message"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "没问题，马上计算。",
+      "metadata": {
+        "created_at": "2026-06-07T03:15:54.091583+00:00",
+        "message_type": "assistant_tool_calls"
+      },
+      "reasoning_content": "用户想要计算 (12 + 8) * 3 这个表达式。这是一个简单的算术运算，可以直接调用计算器工具。",
+      "tool_calls": [
+        {
+          "index": 0,
+          "id": "call_00_GNaKW2v366aEnwlW2mcm2359",
+          "type": "function",
+          "function": {
+            "name": "calculator",
+            "arguments": "{\"expression\": \"(12 + 8) * 3\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_00_GNaKW2v366aEnwlW2mcm2359",
+      "name": "calculator",
+      "content": "{\"expression\": \"(12 + 8) * 3\", \"result\": 60}",
+      "metadata": {
+        "created_at": "2026-06-07T03:15:54.111116+00:00",
+        "message_type": "tool_result"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "计算结果：**(12 + 8) × 3 = 60**。",
+      "metadata": {
+        "created_at": "2026-06-07T03:15:54.848365+00:00",
+        "message_type": "assistant_response"
+      },
+      "reasoning_content": "结果是 60。直接告诉用户。"
+    },
+    {
+      "role": "user",
+      "content": "我刚才问你什么了",
+      "metadata": {
+        "created_at": "2026-06-07T03:22:03.959628+00:00",
+        "message_type": "user_message"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "你刚才让我算 **(12 + 8) × 3**，结果是 **60**。",
+      "metadata": {
+        "created_at": "2026-06-07T03:22:06.881722+00:00",
+        "message_type": "assistant_response"
+      },
+      "reasoning_content": "The user is asking what they just asked me. I can just answer directly based on the conversation history. They asked me to calculate \"(12 + 8) * 3\"."
+    },
+    {
+      "role": "user",
+      "content": "给我讲个睡前故事",
+      "metadata": {
+        "created_at": "2026-06-07T03:22:36.603501+00:00",
+        "message_type": "user_message"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "好的，给你讲一个简短温柔的小故事 🌙\n\n---\n\n**《小星星的晚安》**\n\n从前，天上有一颗小星星，它总是睡不着一闪一闪地眨着眼睛。\n\n它问月亮婆婆：\"为什么大家都不亮着陪我玩呢？\"\n\n月亮婆婆笑着说：\"你看，小花合上了花瓣，小鸟收起了翅膀，小河放慢了水声……夜晚就是用来休息的呀。\"\n\n小星星听了，轻轻拉来一朵云当作被子，慢慢闭上眼睛。它的光芒变得越来越柔和，像一盏小小的夜灯。\n\n后来，每到夜晚，小星星都会温柔地亮着，帮晚归的人照亮回家的路，然后和大家一起进入甜甜的梦乡。\n\n---\n\n晚安，好梦 🌟",
+      "metadata": {
+        "created_at": "2026-06-07T03:22:39.502628+00:00",
+        "message_type": "assistant_response"
+      },
+      "reasoning_content": "用户让我讲睡前故事，这不需要调用工具。我直接讲一个简短的睡前故事就好。"
+    },
+    {
+      "role": "user",
+      "content": "这个故事有什么来源吗",
+      "metadata": {
+        "created_at": "2026-06-07T03:25:20.849167+00:00",
+        "message_type": "user_message"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "这个睡前故事没有任何现成的来源，是我刚刚现场为你编的原创小故事。内容参考了一些童话中常见的意象（小星星、月亮婆婆、云朵被子等），但整体情节和表达都是临时创作的，并非改编自任何特定书籍或已有作品。",
+      "metadata": {
+        "created_at": "2026-06-07T03:25:24.251995+00:00",
+        "message_type": "assistant_response"
+      },
+      "reasoning_content": "The user is asking about the source of the bedtime story I just told. I made it up on the spot, so I should honestly say it's not from any specific book or source—it's an impromptu creation."
+    }
+  ],
+  "memory": {
+    "tasks": {},
+    "facts": {},
+    "preferences": {}
+  },
+  "metadata": {
+    "created_at": "2026-06-07T03:15:51.001595+00:00",
+    "updated_at": "2026-06-07T03:25:24.251995+00:00"
+  }
+}

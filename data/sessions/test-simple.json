@@ -1,0 +1,48 @@
+{
+  "session_id": "test-simple",
+  "messages": [
+    {
+      "role": "user",
+      "content": "你知道中国吗",
+      "metadata": {
+        "created_at": "2026-06-07T06:08:14.317086+00:00",
+        "message_type": "user_message"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "当然知道。中国是一个位于东亚的国家，拥有悠久的历史和丰富的文化，是世界上人口最多的国家，也是全球重要的经济体之一。首都是北京。",
+      "metadata": {
+        "created_at": "2026-06-07T06:08:17.399006+00:00",
+        "message_type": "assistant_response"
+      },
+      "reasoning_content": "用户问了一个很简单的问题：\"你知道中国吗\"。这是一个常识性问题，不需要调用任何工具。直接回答即可。"
+    },
+    {
+      "role": "user",
+      "content": "它的经济中心在哪里",
+      "metadata": {
+        "created_at": "2026-06-07T06:08:20.782333+00:00",
+        "message_type": "user_message"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "中国的经济中心通常指**上海**。上海是中国最大的城市之一，也是全球重要的金融、贸易和航运中心。",
+      "metadata": {
+        "created_at": "2026-06-07T06:08:21.859972+00:00",
+        "message_type": "assistant_response"
+      },
+      "reasoning_content": "用户问的是中国的经济中心，通常指上海。我可以直接回答这个问题，不需要调用工具。"
+    }
+  ],
+  "memory": {
+    "tasks": {},
+    "facts": {},
+    "preferences": {}
+  },
+  "metadata": {
+    "created_at": "2026-06-07T06:08:14.317086+00:00",
+    "updated_at": "2026-06-07T06:08:21.859972+00:00"
+  }
+}
