@@ -19,6 +19,15 @@ def test_session_store_creates_and_persists_session(tmp_path: Path):
     assert (tmp_path / "demo.json").exists()
 
 
+def test_session_store_supports_chinese_session_id(tmp_path: Path):
+    store = SessionMemoryStore(tmp_path)
+
+    session = store.append_user_message("测试会话", "你好")
+
+    assert session["session_id"] == "测试会话"
+    assert (tmp_path / "测试会话.json").exists()
+
+
 def test_assistant_message_keeps_reasoning_locally_but_filters_llm_context(tmp_path: Path):
     store = SessionMemoryStore(tmp_path)
     store.append_user_message("demo", "Think briefly, then reply OK")
@@ -132,3 +141,10 @@ def test_session_id_rejects_path_traversal(tmp_path: Path):
 
     with pytest.raises(MemoryError, match="session_id"):
         store.load("../outside")
+
+
+def test_session_id_rejects_path_separator(tmp_path: Path):
+    store = SessionMemoryStore(tmp_path)
+
+    with pytest.raises(MemoryError, match="session_id"):
+        store.load("bad/name")

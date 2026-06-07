@@ -48,6 +48,7 @@
   - assistant `tool_calls` 响应消息必须保留，用于和后续 `role=tool` 的 `tool_call_id` 对齐，但不能携带 `reasoning_content`。
 - 实现 session memory：`src/agent/memory.py`。
   - 支持按 session JSON 读写。
+  - 支持中文 session 名称；仍禁止路径穿越、路径分隔符和 Windows 非法文件名字符。
   - 支持本地保存 user / assistant / tool 消息流水。
   - assistant 消息本地保留 `content`、`reasoning_content` 和 `tool_calls`。
   - 实现 `build_llm_context()`，从本地完整 `messages` 生成 LLM 请求上下文。
@@ -64,6 +65,7 @@
   - 检测 `tool_calls` 后执行本地工具，将工具结果追加为 `role=tool` 消息，再继续下一轮 LLM。
   - 默认开启 thinking mode，且不显式设置 `tool_choice`。
   - 执行 `manage_todo_list` 后同步 session 级 `memory.tasks`，并发出 `task_list` 事件供 CLI 展示。
+  - 完成 `MAX_AGENT_STEPS` 收束策略：达到最大步数且已有工具结果时，追加内部收束提示并进行一次不传 `tools` 的最终 LLM 调用。
   - 每次 LLM stream step 记录 session 级 `req_res.log`：`data/sessions/{session_id}.req_res.log`。
   - `req_res.log` 记录脱敏 request 和处理后的完整 response；流式 chunks 保留在 response 的 `_stream_chunks` 字段。
   - 请求 system prompt 默认注入上海时区 runtime context：
@@ -88,6 +90,17 @@
   - 每条 trace 记录 `session_id`、`turn_id`、`step`、`tool_call_id`、`tool`、`arguments`、`result`、`error`、`raw_tool_call`、`timestamp`。
   - AgentRuntime 每次工具执行后立即追加 trace。
 - 新增 trace 测试：`tests/test_trace.py`。
+- 实现 Streamlit Web 页面：`src/web.py`。
+  - 左侧统一 session 管理：选择已有 session、输入 session、新建 session。
+  - 打开会话后展示当前 session 的全部对话记录。
+  - assistant 消息支持展开查看 `reasoning_content`。
+  - assistant `tool_calls` 以 `tool_use` 区域展示。
+  - `role=tool` 工具结果以 `tool_result` 区域展示。
+  - 侧边栏常驻展示当前 session 的 `todo_list`。
+  - runtime 发出 `task_list` 事件时，Web 实时刷新任务列表。
+  - Web 输入仍调用同一套 `AgentRuntime.run_turn()`，不单独实现 agent loop。
+  - 提供 `工具 Trace` 和 `Req/Res` 标签页查看汇总日志。
+- 新增 Web helper 测试：`tests/test_web.py`。
 
 ## 验证记录
 
@@ -305,6 +318,50 @@ Agent> (12 + 8) * 3 = **60** ✅
 data/traces/trace-smoke.trace.log
 ```
 
+Web 页面验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_web.py tests\test_project_structure.py
+conda run -n mcp-learn pytest -q
+conda run -n mcp-learn streamlit run src/web.py --server.port 8501 --server.headless true
+```
+
+结果：
+
+```text
+6 passed
+46 passed
+Streamlit listening on http://localhost:8501
+```
+
+中文 session 名称验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_memory.py tests\test_web.py
+conda run -n mcp-learn pytest -q
+```
+
+结果：
+
+```text
+14 passed
+49 passed
+```
+
+最大步数收束策略验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_runtime.py
+conda run -n mcp-learn pytest -q
+```
+
+结果：
+
+```text
+7 passed
+42 passed
+```
+
 CLI smoke test：
 
 ```bash
@@ -320,16 +377,14 @@ Agent> 没问题，马上计算。计算结果：**(12 + 8) × 3 = 60**。
 ## 未完成
 
 - 步骤 10：完善 agent runtime loop。
-  - 10.1 将 todo 工具结果同步到 session 级 `memory.tasks`。
-  - 10.2 增强最大步数收束策略：已有工具结果时追加内部提示并做无工具收束调用。
-  - 10.3 接入 trace logger。
+  - 10.1 补充更多真实 CLI 示例验证。
 - 步骤 11：完善 CLI。
   - 11.1 打印简洁 trace。
   - 11.2 增加 session 列表或清理命令。
-- 步骤 12：实现简单 Streamlit Web 页面。
-  - 12.1 Web 聊天主体展示 assistant 正式回答。
-  - 12.2 Web 展示或可展开查看 `reasoning_content`。
-  - 12.3 Web 展示工具调用 trace，不混入 assistant 正式回答。
+- 步骤 12：完善 Streamlit Web 页面。
+  - 12.1 增强页面样式和布局细节。
+  - 12.2 增加 session 删除 / 清理按钮。
+  - 12.3 增加更多真实 Web 录屏验证用例。
 - 步骤 13：补充 README。
 - 步骤 14：补充 Prompt 与问题解决记录。
 - 步骤 15：跑通 CLI 示例。
@@ -351,6 +406,7 @@ Agent> 没问题，马上计算。计算结果：**(12 + 8) × 3 = 60**。
 - 每个 session 对应一个 req/res 日志文件：`data/sessions/{session_id}.req_res.log`，用于复盘真实请求和处理后响应；流式 chunks 保留在 response 的 `_stream_chunks` 字段。
 - runtime prompt 默认注入上海时区上下文，locale 固定为 `zh-CN`。
 - CLI session 可留空，留空时自动生成 `YYYYMMDD-HHMMSS-uuid` 格式 session id。
+- CLI/Web session 名称支持中文；底层直接保存为中文 JSON 文件名，同时继续拒绝 `..`、路径分隔符和 Windows 非法文件名字符。
 - `reasoning_content` 只用于本地保存、调试和展示，不作为下一次 LLM 请求上下文发送。
 - 本地 session `messages` 是完整记录，不等同于 LLM 请求 payload；发送前必须通过上下文组装函数过滤和转换。
 - 请求上下文保留 `role=tool` 工具结果消息、assistant 正式回答消息和 assistant `tool_calls` 响应消息；assistant `tool_calls` 消息只包含协议所需字段，不携带 `reasoning_content`。

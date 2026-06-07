@@ -59,6 +59,10 @@ class AgentRuntime:
         "不要把 reasoning_content 当作正式回答输出。"
     )
     DEFAULT_TIMEZONE = "Asia/Shanghai"
+    MAX_STEPS_FINAL_PROMPT = (
+        "已达到本轮最大推理步数限制。请不要再调用工具，请根据当前已有的对话历史和工具结果给出最终答案。"
+        "如果信息不足，请说明当前能确定的内容和缺失的信息。"
+    )
 
     def __init__(
         self,
@@ -153,6 +157,16 @@ class AgentRuntime:
                     result=execution.get("result", {"error": execution.get("error", "unknown error")}),
                 )
 
+            if step == self.config.max_agent_steps and tool_executions:
+                return self._finalize_after_max_steps(
+                    session_id=session_id,
+                    turn_id=turn_id,
+                    step=step + 1,
+                    tool_executions=tool_executions,
+                    last_reasoning=last_reasoning,
+                    on_event=on_event,
+                )
+
         fallback = "已达到本轮最大工具调用步数限制，暂时无法继续完成。"
         self.memory_store.append_assistant_message(
             session_id,
@@ -174,7 +188,7 @@ class AgentRuntime:
         turn_id: str,
         step: int,
         messages: list[dict[str, Any]],
-        tools: list[dict[str, Any]],
+        tools: list[dict[str, Any]] | None,
         on_event: StreamEventHandler | None,
     ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
         events: list[dict[str, Any]] = []
@@ -184,12 +198,13 @@ class AgentRuntime:
             "base_url": self.config.deepseek_base_url,
             "api_key": _mask_secret(self.config.deepseek_api_key),
             "messages": messages,
-            "tools": tools,
             "tool_choice": None,
             "max_tokens": 1000,
             "extra_body": {"thinking": {"type": "enabled"}},
             "stream": True,
         }
+        if tools is not None:
+            request["tools"] = tools
 
         for event in self.llm_client.stream_chat_events(
             messages=messages,
@@ -229,6 +244,44 @@ class AgentRuntime:
                 "tool_call_id": tool_call.get("id", "") if isinstance(tool_call, dict) else "",
                 "type": tool_call.get("type", "function") if isinstance(tool_call, dict) else "function",
             }
+
+    def _finalize_after_max_steps(
+        self,
+        session_id: str,
+        turn_id: str,
+        step: int,
+        tool_executions: list[dict[str, Any]],
+        last_reasoning: str,
+        on_event: StreamEventHandler | None,
+    ) -> AgentTurnResult:
+        session = self.memory_store.load(session_id)
+        messages = build_llm_context(session, system_prompt=self._system_prompt_with_runtime_context())
+        messages.append({"role": "user", "content": self.MAX_STEPS_FINAL_PROMPT})
+        message, _events = self._stream_once(
+            session_id=session_id,
+            turn_id=turn_id,
+            step=step,
+            messages=messages,
+            tools=None,
+            on_event=on_event,
+        )
+        assistant_message = AssistantMessage.from_api_message(message)
+        if not assistant_message.content:
+            assistant_message = AssistantMessage(
+                role="assistant",
+                content="已达到本轮最大工具调用步数限制。当前已有工具结果，但模型没有生成可用的最终答案。",
+                reasoning_content=assistant_message.reasoning_content or last_reasoning,
+            )
+        self.memory_store.append_assistant_message(session_id, assistant_message)
+        return AgentTurnResult(
+            session_id=session_id,
+            turn_id=turn_id,
+            answer=assistant_message.content,
+            reasoning_content=assistant_message.reasoning_content,
+            steps=self.config.max_agent_steps,
+            tool_executions=tool_executions,
+            messages=self.memory_store.load(session_id)["messages"],
+        )
 
     def _system_prompt_with_runtime_context(self) -> str:
         return f"{self.system_prompt}\n\n{build_runtime_context()}"

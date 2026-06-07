@@ -307,3 +307,60 @@ def test_runtime_blank_session_id_generates_timestamp_uuid_session(tmp_path: Pat
     assert re.fullmatch(r"\d{8}-\d{6}-[0-9a-f]{8}", result.session_id)
     assert (tmp_path / "sessions" / f"{result.session_id}.json").exists()
     assert (tmp_path / "sessions" / f"{result.session_id}.req_res.log").exists()
+
+
+def test_runtime_finalizes_without_tools_after_max_steps_with_tool_result(tmp_path: Path):
+    tool_call = {
+        "id": "call_1",
+        "type": "function",
+        "function": {
+            "name": "calculator",
+            "arguments": '{"expression": "(12 + 8) * 3"}',
+        },
+    }
+    fake_llm = FakeStreamingLLM(
+        [
+            [
+                {"type": "tool_call", "tool_call": tool_call},
+                {
+                    "type": "message",
+                    "message": {
+                        "role": "assistant",
+                        "content": "",
+                        "reasoning_content": "Need calculator.",
+                        "tool_calls": [tool_call],
+                    },
+                    "finish_reason": "tool_calls",
+                },
+            ],
+            [
+                {"type": "content_delta", "delta": "根据工具结果，答案是 60。"},
+                {
+                    "type": "message",
+                    "message": {
+                        "role": "assistant",
+                        "content": "根据工具结果，答案是 60。",
+                        "reasoning_content": "Summarize existing tool result.",
+                    },
+                    "finish_reason": "stop",
+                },
+            ],
+        ]
+    )
+    runtime = make_runtime(tmp_path, fake_llm, max_steps=1)
+
+    result = runtime.run_turn("帮我算一下 (12 + 8) * 3", session_id="demo")
+
+    assert result.answer == "根据工具结果，答案是 60。"
+    assert result.steps == 1
+    assert len(fake_llm.calls) == 2
+    assert fake_llm.calls[1]["tools"] is None
+    assert fake_llm.calls[1]["messages"][-1] == {
+        "role": "user",
+        "content": runtime.MAX_STEPS_FINAL_PROMPT,
+    }
+    assert any(
+        message["role"] == "tool" and "60" in message["content"]
+        for message in fake_llm.calls[1]["messages"]
+    )
+    assert result.messages[-1]["content"] == "根据工具结果，答案是 60。"

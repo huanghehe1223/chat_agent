@@ -17,7 +17,7 @@ class MemoryError(RuntimeError):
     """Raised when session memory cannot be loaded or saved."""
 
 
-_SESSION_ID_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+$")
+_FORBIDDEN_SESSION_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
 
 @dataclass
@@ -277,8 +277,10 @@ def _validate_session_id(session_id: str) -> str:
     if not isinstance(session_id, str) or not session_id.strip():
         raise MemoryError("session_id must be a non-empty string.")
     safe_session_id = session_id.strip()
-    if not _SESSION_ID_PATTERN.fullmatch(safe_session_id):
-        raise MemoryError("session_id may only contain letters, numbers, dots, underscores, and hyphens.")
+    if safe_session_id in {".", ".."} or ".." in safe_session_id:
+        raise MemoryError("session_id must not contain path traversal segments.")
+    if _FORBIDDEN_SESSION_CHARS.search(safe_session_id):
+        raise MemoryError('session_id must not contain path separators or Windows reserved characters: <>:"/\\|?*')
     return safe_session_id
 
 
