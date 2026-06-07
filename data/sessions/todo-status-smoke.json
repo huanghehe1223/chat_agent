@@ -1,0 +1,255 @@
+{
+  "session_id": "todo-status-smoke",
+  "messages": [
+    {
+      "role": "user",
+      "content": "创建一个任务列表，先搜索什么是RAG，再搜索有哪些RAG框架，最后搜索最新RAG前沿技术，只完成第一个任务即可",
+      "metadata": {
+        "created_at": "2026-06-07T07:52:37.943689+00:00",
+        "message_type": "user_message"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "好的！我先创建任务列表。",
+      "metadata": {
+        "created_at": "2026-06-07T07:52:41.847709+00:00",
+        "message_type": "assistant_tool_calls"
+      },
+      "reasoning_content": "用户想要创建一个任务列表，包含三个任务：\n1. 搜索什么是RAG\n2. 搜索有哪些RAG框架\n3. 搜索最新RAG前沿技术\n\n用户说只完成第一个任务即可。所以我需要：\n1. 先创建任务列表（全部标记为 not-started）\n2. 然后开始执行第一个任务：搜索什么是RAG（将其标记为 in-progress）\n3. 搜索完成后，将第一个任务标记为 completed\n4. 给出回答\n\n让我先创建任务列表。",
+      "tool_calls": [
+        {
+          "index": 0,
+          "id": "call_00_SZJkmZPSPPghduguzC6T9742",
+          "type": "function",
+          "function": {
+            "name": "manage_todo_list",
+            "arguments": "{\"todoList\": [{\"id\": 1, \"title\": \"搜索什么是RAG\", \"status\": \"not-started\"}, {\"id\": 2, \"title\": \"搜索有哪些RAG框架\", \"status\": \"not-started\"}, {\"id\": 3, \"title\": \"搜索最新RAG前沿技术\", \"status\": \"not-started\"}]}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_00_SZJkmZPSPPghduguzC6T9742",
+      "name": "manage_todo_list",
+      "content": "{\"todoList\": [{\"id\": 1, \"title\": \"搜索什么是RAG\", \"status\": \"not-started\"}, {\"id\": 2, \"title\": \"搜索有哪些RAG框架\", \"status\": \"not-started\"}, {\"id\": 3, \"title\": \"搜索最新RAG前沿技术\", \"status\": \"not-started\"}], \"summary\": {\"total\": 3, \"not_started\": 3, \"in_progress\": 0, \"completed\": 0}}",
+      "metadata": {
+        "created_at": "2026-06-07T07:52:41.896391+00:00",
+        "message_type": "tool_result"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "任务列表已创建！现在开始执行第一个任务：搜索什么是RAG。",
+      "metadata": {
+        "created_at": "2026-06-07T07:52:43.710780+00:00",
+        "message_type": "assistant_tool_calls"
+      },
+      "reasoning_content": "好的，任务列表已创建。现在开始执行第一个任务：搜索什么是RAG。我需要先将其标记为 in-progress。",
+      "tool_calls": [
+        {
+          "index": 0,
+          "id": "call_00_2K2e21cNsl0xkO6XGol22440",
+          "type": "function",
+          "function": {
+            "name": "manage_todo_list",
+            "arguments": "{\"todoList\": [{\"id\":1,\"title\":\"搜索什么是RAG\",\"status\":\"in-progress\"},{\"id\":2,\"title\":\"搜索有哪些RAG框架\",\"status\":\"not-started\"},{\"id\":3,\"title\":\"搜索最新RAG前沿技术\",\"status\":\"not-started\"}]}"
+          }
+        },
+        {
+          "index": 1,
+          "id": "call_01_h6eN2eRHiXmtjYfCRtSe2445",
+          "type": "function",
+          "function": {
+            "name": "search",
+            "arguments": "{\"query\": \"什么是RAG 检索增强生成\", \"max_results\": 3}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_00_2K2e21cNsl0xkO6XGol22440",
+      "name": "manage_todo_list",
+      "content": "{\"todoList\": [{\"id\": 1, \"title\": \"搜索什么是RAG\", \"status\": \"in-progress\"}, {\"id\": 2, \"title\": \"搜索有哪些RAG框架\", \"status\": \"not-started\"}, {\"id\": 3, \"title\": \"搜索最新RAG前沿技术\", \"status\": \"not-started\"}], \"summary\": {\"total\": 3, \"not_started\": 2, \"in_progress\": 1, \"completed\": 0}}",
+      "metadata": {
+        "created_at": "2026-06-07T07:52:43.751158+00:00",
+        "message_type": "tool_result"
+      }
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_01_h6eN2eRHiXmtjYfCRtSe2445",
+      "name": "search",
+      "content": "{\"query\": \"什么是RAG 检索增强生成\", \"answer\": \"Retrieval Augmented Generation (RAG) enhances AI-generated answers by combining large language model knowledge with external data sources. It uses a retrieval model to fetch relevant information and a generative model to produce precise responses. RAG improves accuracy by incorporating real-time, domain-specific data.\", \"results\": [{\"title\": \"什么是检索增强生成(RAG)？| NVIDIA - 英伟达\", \"url\": \"https://www.nvidia.cn/glossary/retrieval-augmented-generation\", \"content\": \"[检索增强生成](https://blogs.nvidia.cn/blog/what-is-retrieval-augmented-generation/) (RAG) 是一项将外部数据源连接到[大语言模型](https://www.nvidia.cn/glossary/large-language-models/) (LLM) 的 AI 技术，可实时生成特定领域或最新的响应。. RAG 使用的多语言模型（嵌入和 LLM）为企业[生成式 AI](https://www.nvidia.cn/glossary/generative-ai/) 应用提供全球可访问性，支持不同语言的查询和文档。. **微调：**提高 RAG 准确性的一种常用方法是微调生成器 (负责生成最终响应的 LLM) 和/ 或嵌入模型 (用于助力检索和提取) 。通过捕获用户对生成的响应的反馈，您可以设置一个[数据飞轮](https://www.nvidia.cn/glossary/data-flywheel/)来自动微调生成器模型。.\"}, {\"title\": \"什么是检索增强生成(RAG)？| RAG 全面指南 - Elastic\", \"url\": \"https://www.elastic.co/cn/what-is/retrieval-augmented-generation\", \"content\": \"[超越 RAG 基础功能](/cn/blog/beyond-rag-basics). ### 检索增强生成 (RAG) 的定义. **检索增强生成 (RAG) 是一种使用来自私有或专有数据源的信息来补充文本生成的技术。**它将检索模型（设计用于搜索大型数据集或知识库）和生成模型（例如[大型语言模型 (LLM)](/cn/what-is/large-language-models)，此类模型会使用检索到的信息生成可供阅读的文本回复）结合在一起。. RAG 对于诸如回答问题和内容生成等任务，具有极大价值，因为它能支持[生成式 AI](/cn/what-is/generative-ai) 系统使用外部信息源生成更准确且更符合语境的回答。它会实施搜索检索方法（通常是[语义搜索](/cn/what-is/semantic-search)或混合搜索）来回应用户的意图并提供更相关的结果。. 深入研究检索增强生成 (RAG)，以及这个方法如何将您的专有实时数据与生成式 AI 模型关联起来，以获得更好的最终用户体验和准确性。. [信息检索](https://www.elastic.co/search-labs/blog/retrieval-vs-poison-fighting-ai-supply-chain-attacks)涉及使用相关技术来高效索引并搜索大型数据集，这让人们能够更轻松地从海量的可用数据中访问他们所需的特定信息。除了用于网络搜索引擎，IR 还经常用于数字图书馆、文档管理系统以及各种各样的信息访问应用程序。. * 在 1990 年代，统计学方法开始盛行，其会使用数据驱动型方法来完成语言任务。. * 在 2010 年代，深度学习出现了巨大转变。转换器架构通过使用注意力机制，改变了自然语言处理；通过注意力机制，模型能够在处理输入序列时专注于输入序列的不同部分。. 我们看到业界正在将大型预训练模型与设计用于具体任务的专业模型相结合。诸如 RAG 等模型仍在继续获得关注，将[生成式 AI](/cn/generative-ai) 语言模型的范围扩展到了标准训练的边界以外。在 2022 年，OpenAI 推出了 ChatGPT，这可以说是最为人熟知的基于转换器架构的 LLM。ChatGPT 的竞争对手有聊天式的基础模型，例如谷歌的 Bard，以及微软的 Bing Chat。Meta 的 Llama 2 并非面向消费者的聊天机器人，而是一个开源 LLM，免费提供给熟悉 LLM 运行原理的研究人员。. 相关内容：[选择 LLM：2024 年开源 LLM 入门指南](/cn/blog/open-source-llms-guide). ### RAG 如何运作？. ### RAG 优势. * RAG 会确保您的模型能够访问最新、最及时的事实和相关信息，因为它能定期更新外部参考信息。这能确保：它所生成的回复会纳入可能与提出查询的用户相关的最新信息。您还可以实施[文档级安全性](https://www.elastic.co/cn/guide/en/elasticsearch/reference/current/field-and-document-access-control.html)来控制数据流中数据的访问权限，并限制特定文档的安全许可。. * RAG 是更具有成本效益的选项，因为它需要的计算和存储都更少，这意味着您无需拥有自己的 LLM，也无需花费时间和资金对您的模型进行微调。. * 虽然由 LLM 提供支持的聊天机器人可以提供比之前的脚本式回复更加个性化的答案，但 RAG 可以提供更加量身定制的答案。这是因为，RAG 在通过衡量意图来生成答案时，能够使用搜索检索方法（通常是语义搜索）来参考一系列基于背景信息得出的要点。. * RAG 模型用途多样，可用于执行各种各样的自然语言处理任务，包括对话系统、内容生成，以及信息检索。. * RAG 依赖于外部知识。如果检索到的信息不正确，RAG 就会生成不准确的结果。. * RAG 的检索部分涉及在大型知识库或网络上进行搜索，这从计算量方面来看，不仅费用高昂，而且速度慢，尽管相比于微调，速度还是快一些，费用也要低一些。. * 当处理敏感数据时，从外部来源检索信息可能带来隐私问题。由于需要遵守隐私和合规要求，这也可能会限制 RAG 能够访问的来源。然而，这能通过文档级访问权限加以解决；文档级访问权限指您可以向特定角色赋予访问和安全许可。. 检索增强生成的未来趋势是，专注于提高 RAG 技术的效率，并让其更加适用于各种应用程序。下面是值得关注的一些趋势：. 除了个性化，用户自己还能对 RAG 模型的行为和回复方式拥有更多掌控权，这有助于用户获得他们正在寻找的结果。. 将 RAG 与其他 AI 技术（例如强化学习）相集成，这将能够促生用途更加多样、更加符合语境的系统，而且这些系统能够同时处理各种数据类型和任务。. 随着 RAG 模型在检索速度和响应时间方面越来越出色，其在需要快速回复的应用程序（例如聊天机器人和虚拟助手）中将会用得越来越多。. 借助 [Elasticsearch](/cn/enterprise-search/rag)，您可以针对生成式 AI 应用、网站、客户或员工体验，[打造基于 RAG 的搜索功能](/cn/demo-gallery/ai-playground)。Elasticsearch 可提供完整的工具包，以便您能：. [了解 Elasticsearch 可以如何针对您的业务改进生成式 AI](/cn/generative-ai). ### 浏览更多的 RAG 资源. * [探索 AI Playground](/cn/demo-gallery/ai-playground). * [超越 RAG 基础功能](/cn/blog/beyond-rag-basics). * [Elasticsearch – 适用于 RAG 的相关度最高的搜索引擎](/cn/enterprise-search/rag). * [选择 LLM：2024 年开源 LLM 入门指南](/cn/blog/open-source-llms-guide). * [AI 搜索算法的解释](/cn/blog/understanding-ai-search-algorithms). * [2024 年技术趋势：搜索和生成式 AI 技术的发展趋势](/cn/virtual-events/2024-technical-search-trends). * [更快地构建原型并与 LLM 集成](/cn/generative-ai). * [揭开 ChatGPT 的神秘面纱：构建 AI 搜索的不同方法](https://www.elastic.co/search-labs/blog/demystifying-chatgpt-methods-building-ai-search). * [检索与毒药的对比 — 对抗 AI 供应链攻击](https://www.elastic.co/search-labs/blog/retrieval-vs-poison-fighting-ai-supply-chain-attacks).\"}, {\"title\": \"高级检索增强生成技术(RAG)全面指南：原理、分块、编码 - CSDN博客\", \"url\": \"https://blog.csdn.net/weixin_44292902/article/details/138255592\", \"content\": \"检索增强生成（又名RAG）为大语言模型提供从某些数据源检索到的信息，作为其生成答案的依据。RAG通常包括两个阶段：检索上下文相关信息和使用检索到的知识指导\"}]}",
+      "metadata": {
+        "created_at": "2026-06-07T07:52:44.587144+00:00",
+        "message_type": "tool_result"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "搜索完成！现在将第一个任务标记为已完成。",
+      "metadata": {
+        "created_at": "2026-06-07T07:52:46.320218+00:00",
+        "message_type": "assistant_tool_calls"
+      },
+      "reasoning_content": "搜索已完成，我获得了关于\"什么是RAG\"的详细信息。现在需要把任务1标记为 completed。",
+      "tool_calls": [
+        {
+          "index": 0,
+          "id": "call_00_yYkWh2qA8vdC0AR51FlC7389",
+          "type": "function",
+          "function": {
+            "name": "manage_todo_list",
+            "arguments": "{\"todoList\": [{\"id\":1,\"title\":\"搜索什么是RAG\",\"status\":\"completed\"},{\"id\":2,\"title\":\"搜索有哪些RAG框架\",\"status\":\"not-started\"},{\"id\":3,\"title\":\"搜索最新RAG前沿技术\",\"status\":\"not-started\"}]}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_00_yYkWh2qA8vdC0AR51FlC7389",
+      "name": "manage_todo_list",
+      "content": "{\"todoList\": [{\"id\": 1, \"title\": \"搜索什么是RAG\", \"status\": \"completed\"}, {\"id\": 2, \"title\": \"搜索有哪些RAG框架\", \"status\": \"not-started\"}, {\"id\": 3, \"title\": \"搜索最新RAG前沿技术\", \"status\": \"not-started\"}], \"summary\": {\"total\": 3, \"not_started\": 2, \"in_progress\": 0, \"completed\": 1}}",
+      "metadata": {
+        "created_at": "2026-06-07T07:52:46.360353+00:00",
+        "message_type": "tool_result"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "## 什么是 RAG？\n\n**RAG**（Retrieval-Augmented Generation，检索增强生成）是一种将**外部数据源**与**大语言模型（LLM）** 结合的 AI 技术。\n\n### 核心原理\n\nRAG 由两个阶段组成：\n\n1. **检索阶段** — 从知识库、文档或网络中检索与用户问题相关的上下文信息（通常使用语义搜索或混合搜索）\n2. **生成阶段** — 大语言模型将检索到的信息作为参考，生成更准确、更有时效性的回答\n\n### 主要优势\n\n- ✅ **实时性** — 可接入最新数据，无需重新训练模型\n- ✅ **准确性** — 减少 LLM 的\"幻觉\"，回答有据可依\n- ✅ **低成本** — 无需微调模型，比重新训练便宜得多\n- ✅ **数据安全** — 可控制哪些文档被访问\n\n### 简单类比\n\n> 想象你在写一篇论文，RAG 就像你先去图书馆查资料（检索），然后再动笔写答案（生成），而不是光凭记忆瞎编。\n\n---\n\n✅ **任务 1（搜索什么是RAG）已完成**，任务 2 和 3 保持未开始状态，按你的要求只处理了第一个任务。",
+      "metadata": {
+        "created_at": "2026-06-07T07:52:49.956622+00:00",
+        "message_type": "assistant_response"
+      },
+      "reasoning_content": "任务1已完成，现在可以给用户回答什么是RAG了。"
+    },
+    {
+      "role": "user",
+      "content": "接着完成第二个任务",
+      "metadata": {
+        "created_at": "2026-06-07T08:31:01.144326+00:00",
+        "message_type": "user_message"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "好的，开始执行第二个任务！",
+      "metadata": {
+        "created_at": "2026-06-07T08:31:07.683756+00:00",
+        "message_type": "assistant_tool_calls"
+      },
+      "reasoning_content": "用户要求接着完成第二个任务：搜索有哪些RAG框架。我需要先把这个任务标记为in-progress，然后进行搜索，搜索完成后标记为completed。",
+      "tool_calls": [
+        {
+          "index": 0,
+          "id": "call_00_sdartqEMGdfsFoAhMmMp2138",
+          "type": "function",
+          "function": {
+            "name": "manage_todo_list",
+            "arguments": "{\"todoList\": [{\"id\":1,\"title\":\"搜索什么是RAG\",\"status\":\"completed\"},{\"id\":2,\"title\":\"搜索有哪些RAG框架\",\"status\":\"in-progress\"},{\"id\":3,\"title\":\"搜索最新RAG前沿技术\",\"status\":\"not-started\"}]}"
+          }
+        },
+        {
+          "index": 1,
+          "id": "call_01_YvnRqPy2KqEGHUUCgLcR7752",
+          "type": "function",
+          "function": {
+            "name": "search",
+            "arguments": "{\"query\": \"RAG框架 检索增强生成 框架 LangChain LlamaIndex\", \"max_results\": 5}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_00_sdartqEMGdfsFoAhMmMp2138",
+      "name": "manage_todo_list",
+      "content": "{\"todoList\": [{\"id\": 1, \"title\": \"搜索什么是RAG\", \"status\": \"completed\"}, {\"id\": 2, \"title\": \"搜索有哪些RAG框架\", \"status\": \"in-progress\"}, {\"id\": 3, \"title\": \"搜索最新RAG前沿技术\", \"status\": \"not-started\"}], \"summary\": {\"total\": 3, \"not_started\": 1, \"in_progress\": 1, \"completed\": 1}}",
+      "metadata": {
+        "created_at": "2026-06-07T08:31:09.743072+00:00",
+        "message_type": "tool_result"
+      }
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_01_YvnRqPy2KqEGHUUCgLcR7752",
+      "name": "search",
+      "content": "{\"query\": \"RAG框架 检索增强生成 框架 LangChain LlamaIndex\", \"answer\": \"LLamaIndex is a framework for building applications with large language models (LLMs). It enhances LLMs by integrating external data sources. It works closely with RAG (Retrieval-Augmented Generation) to improve model capabilities.\", \"results\": [{\"title\": \"想加速RAG開發？你需認識LLamaIndex框架 | MakerPRO\", \"url\": \"https://makerpro.cc/2024/11/know-more-about-llamaindex\", \"content\": \"# 想加速RAG開發？你需認識LLamaIndex框架. Posted By MakerPRO編輯部 on 11 月 21, 2024 in Llama 2, LLM, RAG, 技術導讀 | 0 comments. LLamaIndex（原名 LangChain Index）是專為構建基於大型語言模型 (LLM) 的應用而設計的一套工具庫與框架。它的核心使命是**簡化資料與 LLM 的整合過程**，特別是讓開發者能夠在使用 LLM 時，輕鬆管理與擷取來自結構化或非結構化資料源的資訊。它廣泛應用於構建諸如企業搜索引擎、智能客服、知識問答和文件分析等需要與外部資料交互的 AI 應用。. LLamaIndex 是當前基於 LLM 應用領域的一個關鍵工具，通過簡化資料整合、提升檢索能力，滿足從個人開發到企業級應用的廣泛需求。對於希望充分發揮 LLM 潛力的開發者而言，LLamaIndex 是不可或缺的解決方案。. ### **5大重要性**. #### **1.加速 LLM 應用開發**. LLamaIndex 簡化了 LLM 與複雜資料源的整合流程，讓開發者不必深入研究每個資料源的技術細節即可快速上手。. #### **2.提升資料檢索精準度**. 通過語義索引與先進的檢索技術，能更準確地將用戶問題映射到相關資料，提高 LLM 回答的有效性。. #### **3.支持企業級需求**. #### **4.與多種 LLM 兼容**. 無論是開放模型（如 LLaMA、GPT）還是企業內部定制的專用 LLM，LLamaIndex 都能靈活適配，提升其在不同場景中的通用性。. 作為 RAG 解決方案的重要組成部分，LLamaIndex 讓 LLM 在生成時能有效利用外部資料，彌補其記憶窗口的限制和知識時效性的問題。. ### **技術架構**. ### **LLamaIndex 與 RAG 的關係**. LLamaIndex 與 RAG（Retrieval-Augmented Generation，檢索增強生成）密切相關，兩者在基於大型語言模型（LLM）的應用中共同構成了一個強大的解決方案，用於提升 LLM 的能力，特別是在知識更新、長文本處理和資料精準生成等方面。. #### **LLamaIndex 與 RAG 的角色定位**. LLamaIndex 是構建 RAG 解決方案的**核心工具**，它的主要任務是處理資料的檢索部分，並為生成部分提供高質量的上下文。. #### **LLamaIndex 在 RAG 中的具體應用**. ### 結論. LLamaIndex 是 RAG 系統中不可或缺的基礎工具，專注於高效資料檢索與管理。透過 LLamaIndex，RAG 可以將資料檢索與生成模型的優勢結合，實現更加精準和高效的智能應用。對於構建企業級知識問答、智能客服、文件分析等應用，LLamaIndex 的加入大幅提升了 RAG 解決方案的實用性與穩定性。. ### 相關文章:. ### Submit a Comment 取消回覆. #### HACK TO REFUND. #### 加入MakerPRO粉專. #### 訂閱MakerPRO週報 ! #### Contact. Designed by Elegant Themes | Powered by WordPress.\"}, {\"title\": \"LangChain与LlamaIndex，RAG框架该怎么选？ - 知乎专栏\", \"url\": \"https://zhuanlan.zhihu.com/p/22550756354\", \"content\": \"在LangChain和LlamaIndex之间进行选择以进行检索增强生成（RAG）取决于项目的复杂程度、所需的灵活性以及每个框架的具体功能。让我们分解一下何时应该选择\"}, {\"title\": \"通过检索增强生成(RAG) 增强LLM的实战演练 - 51CTO\", \"url\": \"https://www.51cto.com/article/788726.html\", \"content\": \"其答案是检索增强生成(RAG)，这是一种通过实时检索紧密场景信息来增强LLM的技术。 本文将介绍如何使用LlamaIndex和LangChain来实现LLM场景数据\"}, {\"title\": \"2025年AI开发者必备的五大 RAG 框架深度解析！_人工智能_瓦罗兰特顶级C位-智能体开发者社区\", \"url\": \"https://adg.csdn.net/695257095b9f5f31781b9ba8.html\", \"content\": \"# logo 智能体开发者社区. ### 智能体开发者社区. 2025年，RAG（检索增强生成）已成为一项热门技术，它避免了昂贵且耗时的模型微调。当前，对RAG框架的需求日益增长，让我们来了解一下它们。检索增强生成（RAG）框架是人工智能领域的重要工具。它们通过允许大型语言模型（LLM）从外部来源检索相关信息来增强其能力。这使得响应更加准确和上下文感知。. `# Embedvectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())retriever = vectorstore.as_retriever()`. This approach helps agents to plan ahead and tackle difficult tasks more effectively. `from llama_index.core import SimpleDirectoryReaderdocuments = SimpleDirectoryReader(input_files=[\\\"/content/uber_2021.pdf\\\"]).load_data()`. `import bs4from langchain import hubfrom langchain_community.document_loaders import WebBaseLoaderfrom langchain_core.documents import Documentfrom langchain_text_splitters import RecursiveCharacterTextSplitterfrom langgraph.graph import START, StateGraphfrom typing_extensions import List, TypedDict`. This can be achieved using techniques like Chain of Thought (CoT) or Tree of Thoughts, which guide models to reason step by step or evaluate multiple possibilities. Although the specific details of its appearance are not definitively known, contemporary accounts suggest that it had curly hair with bronze or silver spikes radiating like flames on the head. 想入门 AI 大模型却找不到清晰方向？备考大厂 AI 岗还在四处搜集零散资料？别再浪费时间啦！2025 年 `AI 大模型全套学习资料`已整理完毕，从学习路线到面试真题，从工具教程到行业报告，一站式覆盖你的所有需求，现在全部`免费分享`！. 102 道 AI 大模型真题：直击大模型核心考点. ##### **L1阶段:启航篇丨极速破界AI新时代**. L1阶段：了解大模型的基础知识，以及大模型在各个行业的应用和分析，学习理解大模型的核心原理、关键技术以及大模型应用场景。. ###### L2阶段：攻坚篇丨RAG开发实战工坊. L2阶段：AI大模型RAG应用开发工程，主要学习RAG检索增强生成：包括Naive RAG、Advanced-RAG以及RAG性能评估，还有GraphRAG在内的多个RAG热门项目的分析。. ###### L3阶段：跃迁篇丨Agent智能体架构设计. L3阶段：大模型Agent应用架构进阶实现，主要学习LangChain、 LIamaIndex框架，也会学习到AutoGPT、 MetaGPT等多Agent系统，打造Agent智能体。. ###### L4阶段：精进篇丨模型微调与私有化部署. L4阶段：大模型的微调和私有化部署，更加深入的探讨Transformer架构，学习大模型的微调技术，利用DeepSpeed、Lamam Factory等工具快速进行模型微调，并通过Ollama、vLLM等推理部署框架，实现模型的快速部署。. 本文档基于实际部署经验编写，旨在帮助你在 Windows 系统上从零开始搭建 OpenClaw，并连接本地 Ollama 模型（如 Qwen2.5 或 Qwen3），使其具备完整的智能体能力。文档包含了所有关键步骤以及常见问题的解决方案。. 飞书 × OpenClaw 接入指南：不用服务器，用长连接把机器人跑起来. 这个项目存在的意义，就是把“飞书接 OpenClaw”这件事，整理成一套的配置入口，并把官方文档没覆盖到的坑集中写成排查清单。先说清楚它的角色：OpenClaw 现在已经内置官方飞书插件 @openclaw/feishu，功能更完整、维护也更及时。，说明飞书 + AI 的接入已经走通。另外，仓库也推荐了一个新项目：把 OpenClaw 变成“多 Agent 团队”，用多个 Agent 分工，Sla.\"}, {\"title\": \"使用 LlamaIndex、Elasticsearch 和 Mistral 的 RAG - Elasticsearch Labs\", \"url\": \"https://www.elastic.co/search-labs/cn/blog/rag-with-llamaIndex-and-elasticsearch\", \"content\": \"## 探索 Elastic:. # 使用 LlamaIndex、Elasticsearch 和 Mistral 的 RAG（检索增强生成. 了解如何使用 LlamaIndex、Elasticsearch 和本地运行的 Mistral 实现 RAG（检索增强生成）系统。. Elasticsearch 与行业领先的生成式 AI 工具和提供商实现了原生集成。请观看我们的网络研讨会，了解如何超越 RAG 基础功能，或使用 Elastic 向量数据库构建生产就绪型应用。. 在本博客中，我们将讨论如何使用 RAG\\\") 技术（检索增强生成）和作为向量数据库的 Elasticsearch 来实现 Q&A 体验。我们将使用 LlamaIndex 和本地运行的 Mistral LLM。. LlamaIndex是用于构建 LLM（大型语言模型）应用程序的领先数据框架。LlamaIndex 为构建 RAG（检索增强生成）应用程序的各个阶段提供了抽象概念。像 LlamaIndex 和 LangChain 这样的框架提供了抽象，因此应用程序不会与任何特定 LLM 的应用程序接口紧密耦合。. Elasticsearch由Elastic 提供。Elastic 是 Elasticsearch 背后的行业领导者，Elasticsearch 是一个搜索和分析引擎，支持精确的全文搜索、语义理解的矢量搜索以及两全其美的混合搜索。Elasticsearch 是一种可扩展的数据存储和矢量数据库。我们在本博客中使用的 Elasticsearch 功能在 Elasticsearch 的免费开放版本中提供。. 检索增强生成（RAG）是一种人工智能技术/模式，它为 LLM 提供外部知识，以生成对用户查询的回复。这样，法律硕士的答复就可以根据具体情况量身定做，答复也更加具体。. Ollama可帮助您在笔记本电脑上本地运行 LLM。我们将使用 Ollama 在本地运行开源的 Mistral-7b 模型。. ### 使用 LlamaIndex、Elasticsearch& Mistral 构建 RAG 应用程序：场景概述. 我们有一个样本数据集（JSON 文件），内容是一家虚构的家庭保险公司的座席人员与客户之间的呼叫中心对话。我们将建立一个简单的 RAG 应用程序，它可以回答以下问题. 我们使用 Ollama 在本地运行 Mistral LLM。. 接下来，我们以`Documents` 的形式将 JSON 文件中的*对话*加载到ElasticsearchStore（由 Elasticsearch 支持的 VectorStore）中。在加载文档时，我们使用本地运行的 Mistral 模型创建嵌入。我们将这些嵌入和*对话*一起存储在 LlamaIndex Elasticsearch 向量存储（ElasticsearchStore）中。. 我们配置一个 LlamaIndex IngestionPipeline，并向其提供我们使用的本地 LLM，在本例中是通过 Ollama 运行的 Mistral。. #### 安装 Elasticsearch. 管道运行完成后，我们应该会在 Elasticsearch 中看到一个名为`calls` 的新索引。使用开发控制台运行一个简单的 elasticsearch 查询，就能看到数据和嵌入式内容一起加载。. 我们定义了一个本地 LLM (`local_llm`) 来指向在 Ollama 上运行的 Mistral 模型。接下来，我们从之前创建的 ElasticssearchStore 向量存储中创建一个 VectorStoreIndex (`index`)，然后从索引中获取一个查询引擎。在创建查询引擎时，我们会引用本地 LLM 来进行响应，我们还会提供 (`similarity_top_k=10`) 来配置应从向量存储中检索并发送给 LLM 以获得响应的文档数量。. 我们发送查询`Give me summary of water related issues` （可随意定制`query` ），法律硕士的回复应与提供的相关文件类似。. ##### 什么是 LlamaIndex？. LlamaIndex 是用于构建 LLM（大型语言模型）应用程序的领先数据框架。. ##### 什么是 Mistral？. 使用 Elasticsearch 与 LLM 进行实体解析，第 2 部分：通过 LLM 判断和语义搜索匹配实体. 在 Elasticsearch 中使用语义搜索和透明 LLM 判断进行实体解析。.\"}]}",
+      "metadata": {
+        "created_at": "2026-06-07T08:31:14.075774+00:00",
+        "message_type": "tool_result"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "搜索完成，现在将第二个任务标记为已完成。",
+      "metadata": {
+        "created_at": "2026-06-07T08:31:18.735587+00:00",
+        "message_type": "assistant_tool_calls"
+      },
+      "reasoning_content": "搜索到了关于RAG框架的信息。主要框架有：\n\n1. **LangChain** — 最流行的LLM应用开发框架，支持构建RAG流水线\n2. **LlamaIndex** — 专为数据索引和检索设计的RAG框架\n3. 还有其他如Elasticsearch等工具\n\n让我把任务2标记为已完成。",
+      "tool_calls": [
+        {
+          "index": 0,
+          "id": "call_00_6RO8YHidw7tSfC2XIq7u6310",
+          "type": "function",
+          "function": {
+            "name": "manage_todo_list",
+            "arguments": "{\"todoList\": [{\"id\":1,\"title\":\"搜索什么是RAG\",\"status\":\"completed\"},{\"id\":2,\"title\":\"搜索有哪些RAG框架\",\"status\":\"completed\"},{\"id\":3,\"title\":\"搜索最新RAG前沿技术\",\"status\":\"not-started\"}]}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_00_6RO8YHidw7tSfC2XIq7u6310",
+      "name": "manage_todo_list",
+      "content": "{\"todoList\": [{\"id\": 1, \"title\": \"搜索什么是RAG\", \"status\": \"completed\"}, {\"id\": 2, \"title\": \"搜索有哪些RAG框架\", \"status\": \"completed\"}, {\"id\": 3, \"title\": \"搜索最新RAG前沿技术\", \"status\": \"not-started\"}], \"summary\": {\"total\": 3, \"not_started\": 1, \"in_progress\": 0, \"completed\": 2}}",
+      "metadata": {
+        "created_at": "2026-06-07T08:31:20.795936+00:00",
+        "message_type": "tool_result"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": "## 主流 RAG 框架\n\n以下是目前最常用的 RAG 开发框架：\n\n### 1️⃣ LangChain\n- **地位**：最流行的 LLM 应用开发框架\n- **特点**：模块化设计，支持链式调用、Agent 机制、多种文档加载器\n- **适用场景**：构建复杂的 RAG 流水线、对话系统、Agent 应用\n\n### 2️⃣ LlamaIndex（原名 GPT Index）\n- **地位**：专为 RAG 而生的数据框架\n- **特点**：强大的数据索引与检索能力，简化文档分块、嵌入、检索流程\n- **适用场景**：知识库问答、企业搜索、文档分析\n\n### 3️⃣ 其他常用工具\n| 工具 | 作用 |\n|------|------|\n| **Elasticsearch** | 向量数据库+全文检索，常作为 RAG 的检索后端 |\n| **Chroma / Weaviate / Pinecone** | 专用向量数据库，存储文档嵌入 |\n| **Haystack** (deepset) | 端到端 NLP 框架，内置 RAG 管道 |\n\n### 简要对比\n| 维度 | LangChain | LlamaIndex |\n|------|-----------|------------|\n| 抽象层次 | 高，链/Agent/工具 | 中，数据索引为主 |\n| 学习曲线 | 较陡 | 相对平缓 |\n| 灵活性 | 极高，可自由组合 | 专注检索优化 |\n\n---\n\n✅ **任务 2（搜索有哪些RAG框架）已完成！** 任务 3（搜索最新RAG前沿技术）仍为未开始状态，需要继续吗？",
+      "metadata": {
+        "created_at": "2026-06-07T08:31:24.660090+00:00",
+        "message_type": "assistant_response"
+      },
+      "reasoning_content": "Good, task 2 is marked as completed. Now I'll summarize the RAG frameworks found from the search results."
+    }
+  ],
+  "memory": {
+    "tasks": {
+      "1": {
+        "id": 1,
+        "title": "搜索什么是RAG",
+        "status": "completed",
+        "updated_at": "2026-06-07T08:31:20.767406+00:00"
+      },
+      "2": {
+        "id": 2,
+        "title": "搜索有哪些RAG框架",
+        "status": "completed",
+        "updated_at": "2026-06-07T08:31:20.767406+00:00"
+      },
+      "3": {
+        "id": 3,
+        "title": "搜索最新RAG前沿技术",
+        "status": "not-started",
+        "updated_at": "2026-06-07T08:31:20.767406+00:00"
+      }
+    },
+    "facts": {},
+    "preferences": {}
+  },
+  "metadata": {
+    "created_at": "2026-06-07T07:52:37.943689+00:00",
+    "updated_at": "2026-06-07T09:14:51.984962+00:00"
+  }
+}

@@ -48,6 +48,46 @@ def test_default_registry_exports_openai_tool_schema_and_executes_call(tmp_path:
     assert execution["result"]["result"] == 60
 
 
+def test_manage_todo_list_schema_requires_full_list_status_updates(tmp_path: Path):
+    registry = build_default_registry(
+        AgentConfig(deepseek_api_key="test-key"),
+        todo_store_path=tmp_path / "todos.json",
+    )
+
+    todo_tool = next(
+        tool["function"]
+        for tool in registry.to_openai_tools()
+        if tool["function"]["name"] == "manage_todo_list"
+    )
+    schema_text = str(todo_tool)
+
+    assert "whenever any task status changes" in todo_tool["description"]
+    assert "after finishing a task" in todo_tool["description"]
+    assert "Always pass the complete todoList" in todo_tool["description"]
+    assert "created, started, or completed" in schema_text
+    assert "before the final user-facing answer" in schema_text
+
+
+def test_search_schema_defines_when_to_use_search(tmp_path: Path):
+    registry = build_default_registry(
+        AgentConfig(deepseek_api_key="test-key"),
+        todo_store_path=tmp_path / "todos.json",
+    )
+
+    search_tool = next(
+        tool["function"]
+        for tool in registry.to_openai_tools()
+        if tool["function"]["name"] == "search"
+    )
+    schema_text = str(search_tool)
+
+    assert "explicitly asks to search" in search_tool["description"]
+    assert "time-sensitive information" in search_tool["description"]
+    assert "knowledge is insufficient" in search_tool["description"]
+    assert "Do not use search for stable general knowledge" in search_tool["description"]
+    assert "Include dates, names, products" in schema_text
+
+
 def test_registry_rejects_unknown_tool(tmp_path: Path):
     registry = build_default_registry(
         AgentConfig(deepseek_api_key="test-key"),

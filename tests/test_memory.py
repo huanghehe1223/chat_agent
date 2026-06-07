@@ -116,6 +116,8 @@ def test_memory_tasks_are_saved_and_injected_as_system_summary(tmp_path: Path):
     assert "You are a helpful agent." in context[0]["content"]
     assert "当前 session 任务状态" in context[0]["content"]
     assert "调研最小 Agent runtime" in context[0]["content"]
+    assert "开始或完成任何任务时，必须立即调用 manage_todo_list" in context[0]["content"]
+    assert "提交完整 todoList" in context[0]["content"]
 
 
 def test_load_missing_session_returns_empty_session(tmp_path: Path):

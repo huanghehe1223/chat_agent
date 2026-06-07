@@ -4,8 +4,8 @@
 
 ## 当前阶段
 
-- 当前步骤：步骤 10/11 - agent loop 与 CLI 基础交互
-- 状态：已完成
+- 当前步骤：步骤 13/17 - 文档、示例与录屏收尾
+- 状态：进行中
 - 更新时间：2026-06-07
 
 ## 已完成
@@ -101,6 +101,43 @@
   - Web 输入仍调用同一套 `AgentRuntime.run_turn()`，不单独实现 agent loop。
   - 提供 `工具 Trace` 和 `Req/Res` 标签页查看汇总日志。
 - 新增 Web helper 测试：`tests/test_web.py`。
+- 强化 `manage_todo_list` 调用协议：
+  - 工具 schema 明确要求创建任务列表时调用 `manage_todo_list`。
+  - 任务开始前必须提交完整 `todoList`，把当前任务标记为 `in-progress`。
+  - 任务完成后、给出最终答复前必须再次提交完整 `todoList`，把当前任务标记为 `completed`。
+  - 默认 system prompt 和 session task memory 摘要都加入状态变更写回规则，避免模型只在文字里说明任务完成。
+- 强化 `search` 使用策略：
+  - 用户明确要求搜索、查询、联网确认时使用。
+  - 问题依赖当前日期、最新进展、价格、天气、新闻、版本、政策等实时性信息时使用。
+  - 模型自身知识储备不足以可靠回答时使用。
+  - 稳定常识、简单计算、纯聊天或已有上下文可可靠回答时不调用 `search`。
+- 优化 Web 实时对话气泡行为：
+  - live `reasoning` 使用独立 placeholder 渲染，推理流结束后立即替换为折叠态。
+  - live `tool_use` 显示约 2 秒后自动替换为折叠态。
+  - live `tool_result` 仍保持原有对话块展示形式和系统图标，显示约 2 秒后自动折叠。
+  - 不再等整轮 agent loop 完成后才统一折叠所有 live 气泡。
+- 完善 Web session 管理：
+  - 当前 session 同步到 URL query param，刷新页面后保持原 session。
+  - session 列表按 session `metadata.created_at` 时间顺序展示；缺少 metadata 的旧文件退回文件修改时间排序。
+  - 首次进入且 URL 未指定 session 时，默认打开按时间排序后的第一个 session。
+  - 侧边栏增加删除当前会话功能，同时删除 session JSON、Req/Res 日志和工具 trace。
+  - 删除当前会话后自动跳转到按时间排序后的第一个 session；如果没有剩余 session，则自动创建新 session。
+  - 删除确认 checkbox 和删除按钮使用 session 级 key，切换会话后不会复用上一个 session 的确认状态。
+- 修正 Web task list 实时更新：
+  - runtime 执行 `manage_todo_list` 后先写入 session `memory.tasks`，立即发出 `task_list` 事件，再发出 `tool_result`。
+  - Web 侧复用同一个 sidebar task panel placeholder，不再额外追加临时 task list。
+  - 收到 `task_list` 事件后从当前 session 持久化文件重新读取 todo list 并渲染，不依赖整轮 agent loop 完成后的 rerun。
+- 调整 LLM 输出上限：
+  - AgentRuntime 默认 `max_tokens` 从 `1000` 调整为 `65536`。
+  - session `req_res.log` 中记录的 request 和实际 `stream_chat_events()` 调用保持一致。
+  - 真实工具调用测试 helper 的请求记录也同步为 `65536`，避免日志样例仍显示旧值。
+- Streamlit Web 页面已完成并经过多轮迭代完善：
+  - 完成与 CLI 共用的 session 管理、对话历史、reasoning、tool_use、tool_result、trace、req/res 展示。
+  - 支持工具调用、多轮对话、中文 session、刷新保持当前 session、按时间顺序展示 session。
+  - 支持新建和删除当前 session，删除时同步清理 session JSON、req/res log 和 trace log。
+  - task list 侧边栏 UI 已增强，并支持 `manage_todo_list` 调用后的实时持久化读取与重绘。
+  - live 对话气泡行为已优化：reasoning/tool_use/tool_result 可在流式过程中按阶段自动折叠。
+  - Req/Res 默认不渲染大 JSON，按需加载原始日志，优先保证页面流畅。
 
 ## 验证记录
 
@@ -348,6 +385,85 @@ conda run -n mcp-learn pytest -q
 49 passed
 ```
 
+Todo 状态更新协议强化验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_tools.py tests\test_memory.py tests\test_runtime.py
+conda run -n mcp-learn pytest -q
+conda run -n mcp-learn python -m src.main --session todo-status-smoke --once "创建一个任务列表，先搜索什么是RAG，再搜索有哪些RAG框架，最后搜索最新RAG前沿技术，只完成第一个任务即可" --no-debug
+```
+
+结果：
+
+```text
+25 passed
+51 passed
+真实 smoke trace 顺序：manage_todo_list(create) -> manage_todo_list(in-progress) + search -> manage_todo_list(completed)
+session memory 最终状态：任务 1 completed，任务 2/3 not-started
+```
+
+Web live 气泡折叠行为验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_web.py
+conda run -n mcp-learn pytest -q
+```
+
+结果：
+
+```text
+5 passed
+51 passed
+```
+
+Web session 保持与删除功能验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_web.py
+```
+
+结果：
+
+```text
+8 passed
+```
+
+Search 使用策略验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_tools.py tests\test_runtime.py
+```
+
+结果：
+
+```text
+18 passed
+```
+
+Web task list 实时更新验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_runtime.py tests\test_web.py
+```
+
+结果：
+
+```text
+17 passed
+```
+
+Runtime max_tokens 调整验证：
+
+```bash
+conda run -n mcp-learn pytest -q tests\test_runtime.py
+```
+
+结果：
+
+```text
+9 passed
+```
+
 最大步数收束策略验证：
 
 ```bash
@@ -376,19 +492,10 @@ Agent> 没问题，马上计算。计算结果：**(12 + 8) × 3 = 60**。
 
 ## 未完成
 
-- 步骤 10：完善 agent runtime loop。
-  - 10.1 补充更多真实 CLI 示例验证。
-- 步骤 11：完善 CLI。
-  - 11.1 打印简洁 trace。
-  - 11.2 增加 session 列表或清理命令。
-- 步骤 12：完善 Streamlit Web 页面。
-  - 12.1 增强页面样式和布局细节。
-  - 12.2 增加 session 删除 / 清理按钮。
-  - 12.3 增加更多真实 Web 录屏验证用例。
 - 步骤 13：补充 README。
 - 步骤 14：补充 Prompt 与问题解决记录。
-- 步骤 15：跑通 CLI 示例。
-- 步骤 16：跑通 Web 示例。
+- 步骤 15：整理 CLI 示例命令与录屏用例。
+- 步骤 16：整理 Web 示例流程与录屏用例。
 - 步骤 17：准备录屏。
 
 ## 设计决策记录
@@ -421,19 +528,13 @@ Agent> 没问题，马上计算。计算结果：**(12 + 8) × 3 = 60**。
 - `MAX_AGENT_STEPS` 表示单轮用户输入里的最大 agent 决策步骤数。
 - 达到最大步数时，不直接中断；如果已有工具结果，会追加一条内部用户提示，要求模型基于当前已有信息给出最终答案。
 - 收束调用不再传入 `tools`，避免模型继续发起工具调用；如果没有可用文本答案，则返回兜底答案并记录 trace。
+- Streamlit Web 页面当前按“可用产品界面”维护：优先保证会话切换、实时流式展示、task list 更新、日志查看和删除等核心交互稳定；后续只做必要微调，不再作为未完成模块追踪。
 
 ## 下一步建议
 
-实现步骤 9：trace logger，并把 AgentRuntime 的工具执行记录落盘。
+进入文档和录屏收尾：
 
-建议新增：
-
-- `src/agent/trace.py`
-- `tests/test_trace.py`
-
-验收点：
-
-- 能记录 `session_id`、`turn_id`、`step`、`tool`、`arguments`、`result`、`error`、`timestamp`。
-- trace 单独写入 `data/traces/`，不混入 session memory。
-- 能按 turn 追加多条工具调用记录。
-- 支持读取最近一次或指定 turn 的 trace，方便 CLI/Web 展示。
+- 更新 README，说明 CLI/Web 启动方式、session 文件、trace、req/res log、工具调用和 todo list 行为。
+- 更新 `PROMPTS_AND_NOTES.md`，整理 DeepSeek thinking、tool_choice、stream、todo、search、Web 交互等关键约束。
+- 准备 CLI/Web 录屏脚本：普通对话、search、calculator、manage_todo_list、task list 持久化、session 删除与恢复。
+- 非必要不跑全量测试；文档类改动通常不跑测试。

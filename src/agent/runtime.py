@@ -57,8 +57,19 @@ class AgentRuntime:
         "需要计算、搜索或管理任务时调用可用工具；"
         "工具返回结果后，基于结果给出用户可见的简洁回答。"
         "不要把 reasoning_content 当作正式回答输出。"
+        "search 工具只在以下情况使用：用户明确要求搜索、查询、联网确认；"
+        "问题依赖当前日期、最新进展、价格、天气、新闻、版本、政策等实时性信息；"
+        "或者你自身知识储备不足以可靠回答。"
+        "对于稳定常识、简单计算、纯聊天或可由已有上下文可靠回答的问题，不要调用 search。"
+        "当用户要求创建任务列表或给出多步骤任务时，必须先调用 manage_todo_list 提交完整任务列表。"
+        "任何任务状态变化都必须立刻再次调用 manage_todo_list 提交完整列表："
+        "开始执行某个任务前把它标记为 in-progress；"
+        "完成某个任务后、给出最终答复前把它标记为 completed；"
+        "未处理任务保持 not-started。"
+        "不要只在文字中说明任务完成，任务状态必须通过工具写回。"
     )
     DEFAULT_TIMEZONE = "Asia/Shanghai"
+    DEFAULT_MAX_TOKENS = 65536
     MAX_STEPS_FINAL_PROMPT = (
         "已达到本轮最大推理步数限制。请不要再调用工具，请根据当前已有的对话历史和工具结果给出最终答案。"
         "如果信息不足，请说明当前能确定的内容和缺失的信息。"
@@ -138,8 +149,6 @@ class AgentRuntime:
                     tool_call=tool_call,
                     execution=execution,
                 )
-                if on_event:
-                    on_event({"type": "tool_result", "execution": execution, "trace": trace_record})
                 if execution.get("tool") == "manage_todo_list" and "todoList" in execution.get("result", {}):
                     self.memory_store.set_todo_list(session_id, execution["result"]["todoList"])
                     if on_event:
@@ -150,6 +159,8 @@ class AgentRuntime:
                                 "execution": execution,
                             }
                         )
+                if on_event:
+                    on_event({"type": "tool_result", "execution": execution, "trace": trace_record})
                 self.memory_store.append_tool_message(
                     session_id=session_id,
                     tool_call_id=execution.get("tool_call_id", ""),
@@ -199,7 +210,7 @@ class AgentRuntime:
             "api_key": _mask_secret(self.config.deepseek_api_key),
             "messages": messages,
             "tool_choice": None,
-            "max_tokens": 1000,
+            "max_tokens": self.DEFAULT_MAX_TOKENS,
             "extra_body": {"thinking": {"type": "enabled"}},
             "stream": True,
         }
@@ -209,7 +220,7 @@ class AgentRuntime:
         for event in self.llm_client.stream_chat_events(
             messages=messages,
             tools=tools,
-            max_tokens=1000,
+            max_tokens=self.DEFAULT_MAX_TOKENS,
             extra_body={"thinking": {"type": "enabled"}},
         ):
             events.append(event)

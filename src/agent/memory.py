@@ -198,6 +198,11 @@ def build_memory_summary(memory: dict[str, Any]) -> str:
         task_id = task.get("id", "")
         if title:
             lines.append(f"- [{status}] {title} (id: {task_id})")
+    if len(lines) > 1:
+        lines.append(
+            "任务状态变更规则：开始或完成任何任务时，必须立即调用 manage_todo_list 提交完整 todoList；"
+            "不要只在文字中说明状态变化。"
+        )
     return "\n".join(lines) if len(lines) > 1 else ""
 
 

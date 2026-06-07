@@ -212,6 +212,8 @@ def test_runtime_persists_manage_todo_list_to_session_memory(tmp_path: Path):
         {"id": 2, "title": "完善 CLI", "status": "in-progress"},
     ]
     assert any(event["type"] == "task_list" for event in seen_events)
+    event_types = [event["type"] for event in seen_events]
+    assert event_types.index("task_list") < event_types.index("tool_result")
     assert fake_llm.calls[1]["messages"][0]["role"] == "system"
     assert "完善 CLI" in fake_llm.calls[1]["messages"][0]["content"]
 
@@ -237,8 +239,27 @@ def test_runtime_uses_thinking_mode_and_default_tool_choice(tmp_path: Path):
 
     call = fake_llm.calls[0]
     assert call["extra_body"] == {"thinking": {"type": "enabled"}}
+    assert call["max_tokens"] == AgentRuntime.DEFAULT_MAX_TOKENS == 65536
     assert call["tool_choice"] is None
     assert call["tools"]
+
+
+def test_default_system_prompt_requires_todo_status_writeback():
+    prompt = AgentRuntime.DEFAULT_SYSTEM_PROMPT
+
+    assert "必须先调用 manage_todo_list 提交完整任务列表" in prompt
+    assert "完成某个任务后、给出最终答复前把它标记为 completed" in prompt
+    assert "任务状态必须通过工具写回" in prompt
+
+
+def test_default_system_prompt_constrains_search_usage():
+    prompt = AgentRuntime.DEFAULT_SYSTEM_PROMPT
+
+    assert "用户明确要求搜索、查询、联网确认" in prompt
+    assert "当前日期、最新进展、价格、天气、新闻、版本、政策" in prompt
+    assert "自身知识储备不足以可靠回答" in prompt
+    assert "稳定常识、简单计算、纯聊天" in prompt
+    assert "不要调用 search" in prompt
 
 
 def test_runtime_injects_shanghai_runtime_context_and_writes_req_res_log(tmp_path: Path):
@@ -280,6 +301,7 @@ def test_runtime_injects_shanghai_runtime_context_and_writes_req_res_log(tmp_pat
     assert payload["session_id"] == "demo"
     assert payload["request"]["api_key"] == "***"
     assert payload["request"]["stream"] is True
+    assert payload["request"]["max_tokens"] == 65536
     assert payload["request"]["messages"][0] == request_messages[0]
     assert payload["response"]["content"] == "OK"
     assert "response_chunks" not in payload

@@ -11,6 +11,7 @@ from src.tools.registry import ToolRegistry, build_default_registry
 
 
 LOG_FILE = Path("logs/deepseek_tool_execution.log")
+DEFAULT_TEST_MAX_TOKENS = 65536
 
 
 def write_tool_execution_log(
@@ -64,7 +65,7 @@ def call_llm_and_execute_tool(
         "model": config.deepseek_model,
         "messages": messages,
         "tools": selected_tools,
-        "max_tokens": 1000,
+        "max_tokens": DEFAULT_TEST_MAX_TOKENS,
         "extra_body": {"thinking": {"type": "enabled"}},
     }
 

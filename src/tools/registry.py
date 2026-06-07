@@ -130,17 +130,27 @@ def build_default_registry(
     registry.register(
         ToolDefinition(
             name="search",
-            description="Search the web with Tavily and return titles, URLs, and summaries.",
+            description=(
+                "Search the web with Tavily and return titles, URLs, and summaries. "
+                "Use this tool when the user explicitly asks to search/look up/check online, "
+                "when the question depends on current or time-sensitive information, or when "
+                "your own knowledge is insufficient to answer reliably. Do not use search for "
+                "stable general knowledge, simple calculations, pure conversation, or questions "
+                "that can be answered confidently from existing context."
+            ),
             parameters={
                 "type": "object",
                 "properties": {
                     "query": {
                         "type": "string",
-                        "description": "Search query keywords.",
+                        "description": (
+                            "Focused search query keywords. Include dates, names, products, "
+                            "locations, or other concrete constraints when recency or precision matters."
+                        ),
                     },
                     "max_results": {
                         "type": "integer",
-                        "description": "Number of results to return, from 1 to 5.",
+                        "description": "Number of results to return, from 1 to 5. Use 3 by default unless the user needs broader coverage.",
                         "minimum": 1,
                         "maximum": 5,
                     },
@@ -160,18 +170,26 @@ def build_default_registry(
             name="manage_todo_list",
             description=(
                 "Manage the complete session todo list for planning and progress tracking. "
-                "Use this for complex multi-step work, after receiving multiple tasks, before "
-                "starting a todo, and immediately after completing a todo. Always pass the "
-                "complete todoList, including all existing and new items. Do not call this for "
-                "single trivial tasks or pure conversation. Todo states: not-started, "
-                "in-progress (at most one item), completed."
+                "Call this tool whenever the user asks to create a task list or gives complex "
+                "multi-step work. You must also call it immediately whenever any task status "
+                "changes: before starting a task, submit the full list with exactly that task "
+                "marked in-progress; after finishing a task, submit the full list again with "
+                "that task marked completed before giving the final answer or moving on. "
+                "Always pass the complete todoList, including all existing and new items; never "
+                "send only the changed item. Do not call this for single trivial tasks or pure "
+                "conversation. Todo states: not-started, in-progress (at most one item), completed."
             ),
             parameters={
                 "type": "object",
                 "properties": {
                     "todoList": {
                         "type": "array",
-                        "description": "Complete array of all todo items. Must include ALL items - both existing and new.",
+                        "description": (
+                            "Complete array of all session todo items after this update. Must "
+                            "include ALL items - both existing and new - every time a task is "
+                            "created, started, or completed. Status updates must be committed "
+                            "through this full-list snapshot before the final user-facing answer."
+                        ),
                         "items": {
                             "type": "object",
                             "properties": {
@@ -188,7 +206,8 @@ def build_default_registry(
                                     "enum": ["not-started", "in-progress", "completed"],
                                     "description": (
                                         "not-started: not begun | in-progress: currently working "
-                                        "(max 1) | completed: fully finished"
+                                        "(max 1) | completed: fully finished and already reflected "
+                                        "in the submitted full todoList"
                                     ),
                                 },
                             },
