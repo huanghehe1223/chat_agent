@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-- 当前步骤：步骤 13/17 - 文档、示例与录屏收尾
+- 当前步骤：步骤 14/17 - Prompt 与问题解决记录
 - 状态：进行中
 - 更新时间：2026-06-07
 
@@ -138,6 +138,11 @@
   - task list 侧边栏 UI 已增强，并支持 `manage_todo_list` 调用后的实时持久化读取与重绘。
   - live 对话气泡行为已优化：reasoning/tool_use/tool_result 可在流式过程中按阶段自动折叠。
   - Req/Res 默认不渲染大 JSON，按需加载原始日志，优先保证页面流畅。
+- 已补充 README：
+  - 介绍项目内容、功能清单、技术实现和运行方式。
+  - 说明自建 Agent loop、最大步数限制、工具列表、trace 与 req/res 日志。
+  - 说明 memory 的召回时机与放置方式。
+  - 单独增加录屏展示章节，并按裸链接形式放置视频链接。
 
 ## 验证记录
 
@@ -490,9 +495,14 @@ conda run -n mcp-learn python -m src.main --session cli-smoke --once "帮我算�
 Agent> 没问题，马上计算。计算结果：**(12 + 8) × 3 = 60**。
 ```
 
+README 文档更新：
+
+```text
+仅文档改动，未运行测试。
+```
+
 ## 未完成
 
-- 步骤 13：补充 README。
 - 步骤 14：补充 Prompt 与问题解决记录。
 - 步骤 15：整理 CLI 示例命令与录屏用例。
 - 步骤 16：整理 Web 示例流程与录屏用例。
@@ -534,7 +544,6 @@ Agent> 没问题，马上计算。计算结果：**(12 + 8) × 3 = 60**。
 
 进入文档和录屏收尾：
 
-- 更新 README，说明 CLI/Web 启动方式、session 文件、trace、req/res log、工具调用和 todo list 行为。
 - 更新 `PROMPTS_AND_NOTES.md`，整理 DeepSeek thinking、tool_choice、stream、todo、search、Web 交互等关键约束。
 - 准备 CLI/Web 录屏脚本：普通对话、search、calculator、manage_todo_list、task list 持久化、session 删除与恢复。
 - 非必要不跑全量测试；文档类改动通常不跑测试。
